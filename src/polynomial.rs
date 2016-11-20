@@ -60,7 +60,7 @@ impl Polynomial {
                        }
                      })
                      .fold(String::with_capacity(self.coefficients.len() * 5), |mut expr, x| {
-                       if !x.starts_with("-") && !expr.is_empty() {
+                       if !x.starts_with('-') && !expr.is_empty() {
                          expr.push('+');
                        }
 
