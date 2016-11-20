@@ -1,0 +1,6 @@
+[package]
+name = "xxcalc-rs"
+version = "0.1.0"
+authors = ["Amadeusz Juskowiak <amadeusz@amanointeractive.com>"]
+
+[dependencies]
