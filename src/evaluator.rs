@@ -190,5 +190,9 @@ mod test {
     let mut parser = Parser::new();
 
     assert_eq!(evaluator.process(parser.process(tokenize("double(2)")).unwrap()), Err(EvaluationError::UnknownSymbol("double".to_string(), 0)));
+
+    evaluator.register_function("double", Function::new(1, |args|{
+      return Ok(args[0].clone() * 2.0)
+    }));
   }
 }
