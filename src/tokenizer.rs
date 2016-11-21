@@ -30,6 +30,7 @@ struct Tokenizer {
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 enum State {
+  Front,
   General,
   Identifier,
   NumberSign,
@@ -44,20 +45,18 @@ impl Default for Tokenizer {
       tokens: TokenList::new(),
       value_position: 0,
       value: String::with_capacity(10),
-      state: State::General,
+      state: State::Front,
       previous_state: State::General
     }
   }
 }
 
-impl Tokenizer {
-  fn process(mut self, line: &str) -> TokenList {
-    self.tokens = TokenList::new();
-    self.state = State::General;
-    self.previous_state = State::General;
-    self.value = String::new();
-    self.value_position = 0;
+pub trait StringProcessor {
+  fn process(self: Self, line: &str) -> TokenList;
+}
 
+impl StringProcessor for Tokenizer {
+  fn process(mut self, line: &str) -> TokenList {
     for (position, character) in line.chars().enumerate() {
       let mut token = Token::Skip;
       self.previous_state = self.state;
@@ -67,7 +66,7 @@ impl Tokenizer {
       match character {
         '(' => {
           token = Token::BracketOpening;
-          self.state = State::General;
+          self.state = State::Front;
         },
         ')' => {
           token = Token::BracketClosing;
@@ -75,13 +74,13 @@ impl Tokenizer {
         },
         ',' => {
           token = Token::Separator;
-          self.state = State::General;
+          self.state = State::Front;
         },
         '-' | '+' if self.state == State::NumberExponent => {
           self.value.push(character);
           self.state = State::NumberExponent;
         },
-        '-' | '+' if self.state == State::General ||
+        '-' | '+' if self.state == State::Front ||
                      self.state == State::Operator => {
           self.value.push(character);
           self.state = State::NumberSign;
@@ -90,7 +89,8 @@ impl Tokenizer {
           token = Token::Operator(character);
           self.state = State::Operator;
         },
-        '_' if self.state == State::General ||
+        '_' if self.state == State::Front ||
+               self.state == State::General ||
                self.state == State::Identifier => {
           self.value.push(character);
           self.state = State::Identifier;
@@ -100,13 +100,15 @@ impl Tokenizer {
           self.state = State::NumberExponent;
         },
         '.' if self.state == State::Number ||
-               self.state == State::General => {
+               self.state == State::General ||
+               self.state == State::Front => {
           self.value.push(character);
           self.state = State::Number;
         },
         _ if character.is_numeric() => {
           self.value.push(character);
-          if self.state == State::General ||
+          if self.state == State::Front ||
+             self.state == State::General ||
              self.state == State::Operator ||
              self.state == State::NumberSign {
             self.state = State::Number;
@@ -116,7 +118,7 @@ impl Tokenizer {
           self.value.push(character);
           self.state = State::Identifier;
         },
-        _ if character.is_whitespace() => self.state = State::General,
+        _ if character.is_whitespace() => self.state = self.previous_state,
         _ => {
           token = Token::Unknown;
           self.state = State::General;
@@ -135,10 +137,12 @@ impl Tokenizer {
 
     self.tokens
   }
+}
 
+impl Tokenizer {
   fn push_number_or_identifier(&mut self, position: Option<usize>) {
     if position.is_some() {
-      if self.state == State::General || self.state == State::Operator {
+      if self.state == State::Front || self.state == State::General || self.state == State::Operator {
         if self.previous_state == State::Number ||
            self.previous_state == State::NumberExponent {
           self.tokens.push_back((self.value_position,

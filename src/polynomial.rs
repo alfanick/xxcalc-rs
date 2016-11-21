@@ -1,34 +1,34 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Polynomial {
   coefficients: Vec<f64>
 }
 
 impl Polynomial {
-  fn new(c: &[f64]) -> Polynomial {
+  pub fn new(c: &[f64]) -> Polynomial {
     Polynomial {
       coefficients: c.to_vec()
     }
   }
 
-  fn linear(b: f64, a: f64) -> Polynomial {
+  pub fn linear(b: f64, a: f64) -> Polynomial {
     Polynomial::new(&[b, a])
   }
 
-  fn constant(b: f64) -> Polynomial {
+  pub fn constant(b: f64) -> Polynomial {
     Polynomial::new(&[b])
   }
 
-  fn zero() -> Polynomial {
+  pub fn zero() -> Polynomial {
     Polynomial::constant(0.0)
   }
 
-  fn degree(&self) -> usize {
+  pub fn degree(&self) -> usize {
     self.coefficients.iter()
                      .rposition(|&a| a != 0.0)
                      .unwrap_or(0)
   }
 
-  fn bind(&self, x: f64) -> Polynomial {
+  pub fn bind(&self, x: f64) -> Polynomial {
     let mut result: f64 = 0.0;
 
     for &coefficient in self.coefficients.iter().rev() {
@@ -39,14 +39,14 @@ impl Polynomial {
     Polynomial::constant(result)
   }
 
-  fn as_f64(&self) -> Result<f64, PolynomialError> {
+  pub fn as_f64(&self) -> Result<f64, PolynomialError> {
     match self.degree() {
       0 => Ok(self.coefficients[0]),
       _ => Err(PolynomialError::NonConstantError)
     }
   }
 
-  fn as_string(&self, name: &str) -> String {
+  pub fn as_string(&self, name: &str) -> String {
     self.coefficients.iter().enumerate().rev()
                      .filter_map(|(exponent, &coefficient)| {
                        if coefficient == 0.0 && exponent > 0 {
@@ -121,6 +121,16 @@ impl Add for Polynomial {
     self
   }
 }
+
+// impl Add for &'static Polynomial {
+  // type Output = Polynomial;
+//
+  // fn add(mut self, other: &Polynomial) -> Polynomial {
+    // let mut k = *self;
+    // k += *other;
+    // k
+  // }
+// }
 
 impl SubAssign for Polynomial {
   fn sub_assign(&mut self, other: Polynomial) {
