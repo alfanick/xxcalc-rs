@@ -8,7 +8,9 @@ pub enum EvaluationError {
   ArgumentMissing(String, usize, usize),
   MultipleExpressions,
   ConflictingName(String),
-  PolynomialError(PolynomialError)
+  PolynomialError(PolynomialError),
+  NonConstantExponent,
+  NonNaturalExponent
 }
 
 pub trait TokensReducer {
@@ -39,6 +41,12 @@ pub struct Evaluator {
 impl From<PolynomialError> for EvaluationError {
   fn from(e: PolynomialError) -> EvaluationError {
     EvaluationError::PolynomialError(e)
+  }
+}
+
+impl Default for Evaluator {
+  fn default() -> Evaluator {
+    Evaluator::new()
   }
 }
 
@@ -125,7 +133,7 @@ impl Evaluator {
 
 #[cfg(test)]
 #[allow(unused_must_use)]
-mod test {
+mod tests {
   use evaluator::*;
   use parser::*;
   use tokenizer::*;

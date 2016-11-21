@@ -1,6 +1,11 @@
 [package]
-name = "xxcalc-rs"
+name = "xxcalc"
 version = "0.1.0"
 authors = ["Amadeusz Juskowiak <amadeusz@amanointeractive.com>"]
 
 [dependencies]
+rustyline = "1.0.0"
+
+[profile.release]
+lto = true
+opt-level = 3

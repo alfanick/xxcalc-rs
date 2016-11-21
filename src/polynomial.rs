@@ -267,7 +267,7 @@ pub enum PolynomialError {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
   use polynomial::*;
 
   #[test]

@@ -18,7 +18,7 @@ pub fn tokenize(line: &str) -> TokenList {
   Tokenizer::default().process(line)
 }
 
-struct Tokenizer {
+pub struct Tokenizer {
   tokens: TokenList,
 
   value_position: usize,
@@ -191,7 +191,7 @@ impl Tokenizer {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
   use tokenizer::*;
 
   #[test]

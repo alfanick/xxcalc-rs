@@ -151,7 +151,7 @@ impl Parser {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
   use parser::*;
   use tokenizer::{tokenize, Token};
 
