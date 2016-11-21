@@ -118,7 +118,7 @@ impl StringProcessor for Tokenizer {
           self.value.push(character);
           self.state = State::Identifier;
         },
-        _ if character.is_whitespace() => self.state = self.previous_state,
+        _ if character.is_whitespace() => self.state = State::Front,
         _ => {
           token = Token::Unknown;
           self.state = State::General;
@@ -253,9 +253,11 @@ mod test {
   #[test]
   fn test_numbers_signed() {
     assert_eq!(tokenize("-2").front(), Some(&(0, Token::Number(-2.0))));
+    assert_eq!(tokenize(" -2").front(), Some(&(0, Token::Number(-2.0))));
     assert_eq!(tokenize("+2").front(), Some(&(0, Token::Number(2.0))));
 
     assert_eq!(tokenize("(-2)").iter().skip(1).next(), Some(&(1, Token::Number(-2.0))));
+    assert_eq!(tokenize("( -2)").iter().skip(1).next(), Some(&(1, Token::Number(-2.0))));
     assert_eq!(tokenize("(+2)").iter().skip(1).next(), Some(&(1, Token::Number(2.0))));
 
     let mut t = tokenize("2-+2");
