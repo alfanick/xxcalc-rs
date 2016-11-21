@@ -1,6 +1,9 @@
 extern crate xxcalc;
-use xxcalc::calculator::Calculator;
-use xxcalc::polynomial_calculator::PolynomialCalculator;
+use xxcalc::tokenizer::tokenize;
+use xxcalc::parser::TokensProcessor;
+use xxcalc::evaluator::TokensReducer;
+use xxcalc::polynomial_calculator::PolynomialParser;
+use xxcalc::polynomial_calculator::PolynomialEvaluator;
 
 extern crate rustyline;
 use rustyline::Editor;
@@ -9,15 +12,20 @@ fn main() {
   let mut rl = Editor::<()>::new();
   let _ = rl.load_history(".xxcalcrs_history");
 
+  let parser = PolynomialParser::default().parser;
+  let evaluator = PolynomialEvaluator::default().evaluator;
+
   while let Ok(input) = rl.readline(">>> ") {
     rl.add_history_entry(&input);
 
-    let result = PolynomialCalculator.process(&input);
-
-    if let Ok(value) = result {
-      println!("{}", value.as_string("x"));
-    } else {
-      println!("Error: {:?}", result);
+    match parser.process(tokenize(&input)) {
+      Ok(t) => {
+        match evaluator.process(t) {
+          Ok(result) => println!("{}", result.as_string("x")),
+          Err(e) => println!("Evaluation error: {:?}", e)
+        }
+      },
+      Err(e) => println!("Parsing error: {:?}", e)
     }
   }
 

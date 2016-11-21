@@ -15,8 +15,8 @@ impl Calculator<Tokenizer, PolynomialParser, PolynomialEvaluator> for Polynomial
 
 }
 
-struct PolynomialEvaluator {
-  evaluator: Evaluator
+pub struct PolynomialEvaluator {
+  pub evaluator: Evaluator
 }
 
 impl Default for PolynomialEvaluator {
@@ -51,8 +51,8 @@ impl TokensReducer for PolynomialEvaluator {
   }
 }
 
-struct PolynomialParser {
-  parser: Parser
+pub struct PolynomialParser {
+  pub parser: Parser
 }
 
 impl Default for PolynomialParser {
