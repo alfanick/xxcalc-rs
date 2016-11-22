@@ -70,6 +70,48 @@ impl StringProcessor for Tokenizer {
       self.implicit_multiplication(position, character);
 
       match character {
+        _ if character.is_numeric() => {
+          self.value.push(character);
+          if self.state == State::Front ||
+             self.state == State::General ||
+             self.state == State::Operator ||
+             self.state == State::NumberSign {
+            self.state = State::Number;
+          }
+        },
+        '-' | '+' if self.state == State::Front ||
+                     self.state == State::Operator => {
+          self.value.push(character);
+          self.state = State::NumberSign;
+        },
+        '-' | '+' if self.state == State::NumberExponent => {
+          self.value.push(character);
+          self.state = State::NumberExponent;
+        },
+        '+' | '-' | '/' | '*' | '^' | '=' => {
+          token = Token::Operator(character);
+          self.state = State::Operator;
+        },
+        'e' if self.state == State::Number => {
+          self.value.push(character);
+          self.state = State::NumberExponent;
+        },
+        _ if character.is_alphabetic() => {
+          self.value.push(character);
+          self.state = State::Identifier;
+        },
+        '_' if self.state == State::Identifier ||
+               self.state == State::Front ||
+               self.state == State::General => {
+          self.value.push(character);
+          self.state = State::Identifier;
+        },
+        '.' if self.state == State::Number ||
+               self.state == State::Front ||
+               self.state == State::General => {
+          self.value.push(character);
+          self.state = State::Number;
+        },
         '(' => {
           token = Token::BracketOpening;
           self.state = State::Front;
@@ -81,48 +123,6 @@ impl StringProcessor for Tokenizer {
         ',' => {
           token = Token::Separator;
           self.state = State::Front;
-        },
-        '-' | '+' if self.state == State::NumberExponent => {
-          self.value.push(character);
-          self.state = State::NumberExponent;
-        },
-        '-' | '+' if self.state == State::Front ||
-                     self.state == State::Operator => {
-          self.value.push(character);
-          self.state = State::NumberSign;
-        },
-        '+' | '-' | '/' | '*' | '^' | '=' => {
-          token = Token::Operator(character);
-          self.state = State::Operator;
-        },
-        '_' if self.state == State::Front ||
-               self.state == State::General ||
-               self.state == State::Identifier => {
-          self.value.push(character);
-          self.state = State::Identifier;
-        },
-        'e' if self.state == State::Number => {
-          self.value.push(character);
-          self.state = State::NumberExponent;
-        },
-        '.' if self.state == State::Number ||
-               self.state == State::General ||
-               self.state == State::Front => {
-          self.value.push(character);
-          self.state = State::Number;
-        },
-        _ if character.is_numeric() => {
-          self.value.push(character);
-          if self.state == State::Front ||
-             self.state == State::General ||
-             self.state == State::Operator ||
-             self.state == State::NumberSign {
-            self.state = State::Number;
-          }
-        },
-        _ if character.is_alphabetic() => {
-          self.value.push(character);
-          self.state = State::Identifier;
         },
         _ => {
           token = Token::Unknown;
