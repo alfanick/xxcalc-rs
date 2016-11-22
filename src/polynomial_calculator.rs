@@ -148,8 +148,11 @@ mod functions {
         let mut v = base.clone();
         let exp = exponent[0] as usize;
 
-        for _ in 1..exp {
-          &mut v * &base;
+        {
+          let mut vr = &mut v;
+          for _ in 1..exp {
+            vr *= &base;
+          }
         }
 
         Ok(v)

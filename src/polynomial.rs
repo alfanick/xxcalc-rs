@@ -201,6 +201,12 @@ impl MulAssign for Polynomial {
   }
 }
 
+impl<'a, 'b> MulAssign<&'b Polynomial> for &'a mut Polynomial {
+  fn mul_assign(&mut self, other: &'b Polynomial) {
+    self.mul(other);
+  }
+}
+
 impl Mul for Polynomial {
   type Output = Polynomial;
 
