@@ -260,3 +260,64 @@ mod tests {
     assert_eq!(parser.process(tokenize_ref!("foo(-1, 2)")).unwrap().first().unwrap(), &(4, Token::Number(-1.0)));
   }
 }
+
+#[cfg(test)]
+mod benchmarks {
+  use super::*;
+  use tokenizer::*;
+  use tokenizer::benchmarks::add_sub_gen;
+  use test::Bencher;
+
+  #[bench]
+  fn bench_parser(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process(add_sub_r);
+    let mut parser = Parser::default();
+    parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
+    parser.register_operator('-', Operator(1, OperatorAssociativity::Left));
+
+    b.iter(|| {
+      (0..10).fold(0, |a, x| a + x + parser.process(tokens).unwrap().len())
+    });
+  }
+
+  #[bench]
+  fn bench_simple_expression(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process("2+2");
+    let mut parser = Parser::default();
+    parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
+
+    b.iter(|| {
+       parser.process(tokens).unwrap().len()
+    });
+  }
+
+  #[bench]
+  fn bench_function_call(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process("foo(2, 2)");
+    let mut parser = Parser::default();
+
+    b.iter(|| {
+       parser.process(tokens).unwrap().len()
+    });
+  }
+
+  #[bench]
+  fn bench_parser_without_arena(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process(add_sub_r);
+
+    b.iter(|| {
+      (0..10).fold(0, |a, x| {
+        let mut parser = Parser::default();
+        parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
+        parser.register_operator('-', Operator(1, OperatorAssociativity::Left));
+        a + x + parser.process(tokens).unwrap().len()
+      })
+    });
+  }
+}

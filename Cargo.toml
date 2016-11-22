@@ -9,3 +9,7 @@ rustyline = "1.0.0"
 [profile.release]
 lto = true
 opt-level = 3
+
+[profile.bench]
+lto = true
+opt-level = 3

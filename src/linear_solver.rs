@@ -2,7 +2,7 @@ use calculator::*;
 use evaluator::*;
 use parser::*;
 use tokenizer::{TokenList, Tokenizer};
-use polynomial_calculator::*;
+use polynomial_calculator::{PolynomialParser, PolynomialEvaluator};
 use polynomial::Polynomial;
 
 #[derive(Debug, PartialEq)]

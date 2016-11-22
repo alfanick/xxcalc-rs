@@ -73,7 +73,7 @@ impl TokensProcessor for PolynomialParser {
   }
 }
 
-mod functions {
+pub mod functions {
   use polynomial::Polynomial;
   use evaluator::EvaluationError;
 
@@ -210,5 +210,43 @@ mod tests {
     assert_eq!(PolynomialCalculator.process("(x^2-3x-10)/(x+2)"), Ok(Polynomial::new(&[-5.0, 1.0])));
     assert_eq!(PolynomialCalculator.process("x^5"), Ok(Polynomial::new(&[0.0, 0.0, 0.0, 0.0, 0.0, 1.0])));
     assert_eq!(PolynomialCalculator.process("(x+1)^5"), Ok(Polynomial::new(&[1.0, 5.0, 10.0, 10.0, 5.0, 1.0])));
+  }
+}
+
+#[cfg(test)]
+mod benchmarks {
+  use super::*;
+  use calculator::Calculator;
+  use tokenizer::{StringProcessor, Tokenizer};
+  use parser::TokensProcessor;
+  use evaluator::TokensReducer;
+  use tokenizer::benchmarks::add_sub_gen;
+  use test::Bencher;
+
+  #[bench]
+  fn bench_calculation(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+
+    let mut tokenizer = Tokenizer::default();
+    let mut parser = PolynomialParser::default().parser;
+    let evaluator = PolynomialEvaluator::default().evaluator;
+
+    b.iter(|| {
+      (0..10).fold(0.0, |a, _| {
+        let tokens = tokenizer.process(add_sub_r);
+        let parsed_tokens = parser.process(tokens).unwrap();
+
+        a + evaluator.process(parsed_tokens).unwrap()[0]
+      })
+    });
+  }
+
+  #[bench]
+  fn bench_calculation_without_arena(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+
+    b.iter(|| {
+      (0..10).fold(0.0, |a, _| a + PolynomialCalculator.process(add_sub_r).unwrap()[0])
+    });
   }
 }

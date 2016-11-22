@@ -148,15 +148,15 @@ mod tests {
 
   }
 
-  fn addition(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+  pub fn addition(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].clone() + args[1].clone())
   }
 
-  fn subtraction(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+  pub fn subtraction(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].clone() - args[1].clone())
   }
 
-  fn multiplication(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+  pub fn multiplication(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].clone() * args[1].clone())
   }
 
@@ -278,4 +278,85 @@ mod tests {
     assert_eq!(evaluator.process(parser.process(tokenize_ref!("x*x")).unwrap()), Ok(Polynomial::new(&[0.0, 0.0, 1.0])));
     assert_eq!(evaluator.process(parser.process(tokenize_ref!("x+x")).unwrap()), evaluator.process(parser.process(tokenize_ref!("2x")).unwrap()));
   }
+}
+
+#[cfg(test)]
+mod benchmarks {
+  use super::*;
+  use parser::*;
+  use tokenizer::*;
+  use tokenizer::benchmarks::add_sub_gen;
+  use test::Bencher;
+  use polynomial_calculator::functions::{addition, subtraction};
+  use polynomial::Polynomial;
+
+  #[bench]
+  fn bench_evaluation(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process(add_sub_r);
+    let mut parser = Parser::new();
+    let _ = parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
+    let _ = parser.register_operator('-', Operator::new(1, OperatorAssociativity::Left));
+    let parsed_tokens = parser.process(tokens).unwrap();
+    let mut evaluator = Evaluator::new();
+
+    let _ = evaluator.register_function("+", Function::new(2, Box::new(|args| {
+      Ok(args[0].clone() + args[1].clone())
+    })));
+    let _ = evaluator.register_function("-", Function::new(2, Box::new(|args| {
+      Ok(args[0].clone() + args[1].clone())
+    })));
+
+    b.iter(|| {
+      (0..10).fold(0.0, |a, _| a + evaluator.process(parsed_tokens).unwrap()[0])
+    });
+  }
+
+  #[bench]
+  fn bench_evaluation_inplace(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process(add_sub_r);
+    let mut parser = Parser::new();
+    let _ = parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
+    let _ = parser.register_operator('-', Operator::new(1, OperatorAssociativity::Left));
+    let parsed_tokens = parser.process(tokens).unwrap();
+    let mut evaluator = Evaluator::new();
+
+    let _ = evaluator.register_function("+", Function::new(2, Box::new(addition)));
+    let _ = evaluator.register_function("-", Function::new(2, Box::new(subtraction)));
+
+    b.iter(|| {
+      (0..10).fold(0.0, |a, _| a + evaluator.process(parsed_tokens).unwrap()[0])
+    });
+  }
+
+  #[bench]
+  fn bench_evaluation_numbers(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process("3.14");
+    let mut parser = Parser::new();
+    let parsed_tokens = parser.process(tokens).unwrap();
+    let evaluator = Evaluator::new();
+
+    b.iter(|| {
+      evaluator.process(parsed_tokens).unwrap()
+    });
+  }
+
+  #[bench]
+  fn bench_evaluation_constants(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+    let tokens = tokenizer.process("pi");
+    let mut parser = Parser::new();
+    let parsed_tokens = parser.process(tokens).unwrap();
+    let mut evaluator = Evaluator::new();
+    let _ = evaluator.register_constant("pi", Polynomial::constant(3.14));
+
+    b.iter(|| {
+      evaluator.process(parsed_tokens).unwrap()
+    });
+  }
+
 }

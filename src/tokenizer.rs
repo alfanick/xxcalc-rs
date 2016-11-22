@@ -52,6 +52,7 @@ pub trait StringProcessor {
 
 impl StringProcessor for Tokenizer {
   fn process(&mut self, line: &str) -> &TokenList {
+    // println!("cap: {}", self.tokens.capacity());
     self.tokens.clear();
     self.value_position = 0;
     self.value.clear();
@@ -306,5 +307,91 @@ mod tests {
     assert_eq!(t.remove(0), ((3, Token::Number(4.0))));
     assert_eq!(t.remove(0), ((4, Token::BracketClosing)));
 
+  }
+}
+
+#[cfg(test)]
+pub mod benchmarks {
+  use super::*;
+  use test::Bencher;
+
+  pub fn add_sub_gen(n: usize) -> String {
+    (0..n).map(|x| format!("{}-{}+", x, x).to_string()).fold(String::new(), |a, x| a+&x)+"0"
+  }
+
+  #[bench]
+  fn bench_tokenizer(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      (0..10).fold(0, |a, x| a + x + tokenizer.process(add_sub_r).len())
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_without_arena(b: &mut Bencher) {
+    let add_sub_r = &add_sub_gen(100000);
+
+    b.iter(|| {
+      (0..10).fold(0, |a, x| {
+        let mut tokenizer = Tokenizer::default();
+        a + x + tokenizer.process(add_sub_r).len()
+      })
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_numbers(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      tokenizer.process("3.1415926535897932").len()
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_short_numbers(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      tokenizer.process("2").len()
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_identifiers(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      tokenizer.process("_lorem_ipsum_dolor").len()
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_short_identifiers(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      tokenizer.process("x").len()
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_brackets(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      tokenizer.process("(").len()
+    });
+  }
+
+  #[bench]
+  fn bench_tokenizer_operators(b: &mut Bencher) {
+    let mut tokenizer = Tokenizer::default();
+
+    b.iter(|| {
+      tokenizer.process("+").len()
+    });
   }
 }
