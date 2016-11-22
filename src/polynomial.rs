@@ -54,8 +54,12 @@ impl Polynomial {
                        } else {
                          match exponent {
                            0 => Some(coefficient.to_string()),
-                           1 if coefficient > 1.0 => Some(format!("{}{}", coefficient, name)),
-                           1 => Some(format!("{}", name)),
+                           _ if !coefficient.is_normal() => Some(format!("{}*{}^{}", coefficient, name, exponent)),
+                           1 if coefficient == -1.0  => Some(format!("-{}", name)),
+                           1 if coefficient == 1.0 => Some(format!("{}", name)),
+                           1 if coefficient != 0.0 => Some(format!("{}{}", coefficient, name)),
+                           _ if coefficient == -1.0 => Some(format!("-{}^{}", name, exponent)),
+                           _ if coefficient == 1.0 => Some(format!("{}^{}", name, exponent)),
                            _ => Some(format!("{}{}^{}", coefficient, name, exponent))
                          }
                        }
