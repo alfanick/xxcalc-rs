@@ -320,6 +320,7 @@ pub mod benchmarks {
   }
 
   #[bench]
+  #[ignore]
   fn bench_tokenizer(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
     let mut tokenizer = Tokenizer::default();
@@ -330,6 +331,7 @@ pub mod benchmarks {
   }
 
   #[bench]
+  #[ignore]
   fn bench_tokenizer_without_arena(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
 

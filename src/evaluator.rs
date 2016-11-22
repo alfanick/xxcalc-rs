@@ -291,6 +291,7 @@ mod benchmarks {
   use polynomial::Polynomial;
 
   #[bench]
+  #[ignore]
   fn bench_evaluation(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
     let mut tokenizer = Tokenizer::default();
@@ -314,6 +315,7 @@ mod benchmarks {
   }
 
   #[bench]
+  #[ignore]
   fn bench_evaluation_inplace(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
     let mut tokenizer = Tokenizer::default();
