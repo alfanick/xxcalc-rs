@@ -8,6 +8,8 @@ use xxcalc::polynomial_calculator::PolynomialEvaluator;
 extern crate rustyline;
 use rustyline::Editor;
 
+// TODO linear solver
+// TODO function mutating state
 fn main() {
   let mut rl = Editor::<()>::new();
   let _ = rl.load_history(".xxcalcrs_history");
@@ -16,7 +18,9 @@ fn main() {
   let evaluator = PolynomialEvaluator::default().evaluator;
 
   while let Ok(input) = rl.readline(">>> ") {
-    rl.add_history_entry(&input);
+    if input.len() < 1024 {
+      rl.add_history_entry(&input);
+    }
 
     match parser.process(tokenize(&input)) {
       Ok(t) => {

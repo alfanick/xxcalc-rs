@@ -81,37 +81,53 @@ mod functions {
   use polynomial::Polynomial;
   use evaluator::EvaluationError;
 
-  pub fn addition(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(args[0].clone() + args[1].clone())
+  pub fn addition(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    let b = args.pop().unwrap();
+    let mut a = args.pop().unwrap();
+
+    a += b;
+    Ok(a)
   }
 
-  pub fn subtraction(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(args[0].clone() - args[1].clone())
+  pub fn subtraction(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    let b = args.pop().unwrap();
+    let mut a = args.pop().unwrap();
+
+    a -= b;
+    Ok(a)
   }
 
-  pub fn multiplication(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(args[0].clone() * args[1].clone())
+  pub fn multiplication(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    let b = args.pop().unwrap();
+    let mut a = args.pop().unwrap();
+
+    a *= b;
+    Ok(a)
   }
 
-  pub fn division(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(args[0].clone() / args[1].clone())
+  pub fn division(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    let b = args.pop().unwrap();
+    let mut a = args.pop().unwrap();
+
+    a /= b;
+    Ok(a)
   }
 
-  pub fn log(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(Polynomial::constant(try!(args[0].clone().as_f64()).log(try!(args[1].clone().as_f64()))))
+  pub fn log(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    Ok(Polynomial::constant(try!(args[0].as_f64()).log(try!(args[1].as_f64()))))
   }
 
-  pub fn log10(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(Polynomial::constant(try!(args[0].clone().as_f64()).log10()))
+  pub fn log10(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    Ok(Polynomial::constant(try!(args[0].as_f64()).log10()))
   }
 
-  pub fn bind(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    Ok(args[0].clone().bind(try!(args[1].clone().as_f64())))
+  pub fn bind(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    Ok(args[0].bind(try!(args[1].as_f64())))
   }
 
-  pub fn exponentiation(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
-    let base = args[0].clone();
-    let exponent = args[1].clone();
+  pub fn exponentiation(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+    let exponent = args.pop().unwrap();
+    let base = args.pop().unwrap();
 
     let base_degree = base.degree();
     let exponent_degree = exponent.degree();
@@ -120,9 +136,9 @@ mod functions {
       Err(EvaluationError::NonConstantExponent)
     } else
     if base_degree == 0 {
-      Ok(Polynomial::constant(try!(base.as_f64()).powf(try!(exponent.as_f64()))))
+      Ok(Polynomial::constant(base[0].powf(exponent[0])))
     } else
-    if try!(exponent.as_f64()).fract() == 0.0 {
+    if exponent[0] >= 0.0 && exponent[0].fract() == 0.0 {
       if base_degree == 1 && base[0] == 0.0 {
         let mut v = Polynomial::zero();
         v[exponent[0] as usize] = base[1].powf(exponent[0]);
@@ -130,10 +146,10 @@ mod functions {
         Ok(v)
       } else {
         let mut v = base.clone();
-        let exp = try!(exponent.as_f64()) as usize;
+        let exp = exponent[0] as usize;
 
         for _ in 1..exp {
-          v *= base.clone();
+          &mut v * &base;
         }
 
         Ok(v)
@@ -169,6 +185,7 @@ mod tests {
     assert_eq!(PolynomialCalculator.process("1+-1"), Ok(Polynomial::constant(0.0)));
 
     assert_eq!(PolynomialCalculator.process("1-1"), Ok(Polynomial::constant(0.0)));
+    assert_eq!(PolynomialCalculator.process("1-3"), Ok(Polynomial::constant(-2.0)));
     assert_eq!(PolynomialCalculator.process("1--1"), Ok(Polynomial::constant(2.0)));
 
     assert_eq!(PolynomialCalculator.process("2*4"), Ok(Polynomial::constant(8.0)));

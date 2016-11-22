@@ -2,6 +2,7 @@ use polynomial::{Polynomial, PolynomialError};
 use tokenizer::{TokenList, Token};
 use std::collections::BTreeMap;
 
+
 #[derive(Debug, PartialEq)]
 pub enum EvaluationError {
   UnknownSymbol(String, usize),
@@ -17,7 +18,7 @@ pub trait TokensReducer {
   fn process(&self, tokens: TokenList) -> Result<Polynomial, EvaluationError>;
 }
 
-type FunctionHandle = Box<Fn(&[Polynomial]) -> Result<Polynomial, EvaluationError>>;
+pub type FunctionHandle = Box<Fn(Vec<Polynomial>) -> Result<Polynomial, EvaluationError>>;
 
 pub struct Function {
   arity: usize,
@@ -95,19 +96,10 @@ impl Evaluator {
       if stack.len() < function.arity {
         Err(EvaluationError::ArgumentMissing(name.clone(), function.arity, position))
       } else {
-        let old_stack_len = stack.len();
-        let mut args: Vec<Polynomial> = Vec::with_capacity(function.arity);
+        let stack_len = stack.len();
+        let args: Vec<Polynomial> = stack.split_off(stack_len - function.arity);
 
-        for _ in 0..function.arity {
-          args.push(stack.pop().unwrap());
-        }
-
-        args.reverse();
-
-        assert!(args.len() == function.arity);
-        assert!(stack.len() == old_stack_len - function.arity);
-
-        (function.handle)(&args)
+        (function.handle)(args)
       }
     } else {
       Err(EvaluationError::UnknownSymbol(name.clone(), position))
@@ -153,15 +145,15 @@ mod tests {
 
   }
 
-  fn addition(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
+  fn addition(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].clone() + args[1].clone())
   }
 
-  fn subtraction(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
+  fn subtraction(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].clone() - args[1].clone())
   }
 
-  fn multiplication(args: &[Polynomial]) -> Result<Polynomial, EvaluationError> {
+  fn multiplication(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].clone() * args[1].clone())
   }
 

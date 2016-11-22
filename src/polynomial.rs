@@ -109,8 +109,10 @@ impl IndexMut<usize> for Polynomial {
   }
 }
 
-impl AddAssign for Polynomial {
-  fn add_assign(&mut self, other: Polynomial) {
+impl<'a, 'b> Add<&'b Polynomial> for &'a mut Polynomial {
+  type Output = &'a Polynomial;
+
+  fn add(self, other: &'b Polynomial) -> &'a Polynomial {
     if other.coefficients.len() > self.coefficients.len() {
       self.coefficients.resize(other.coefficients.len(), 0.0);
     }
@@ -118,6 +120,14 @@ impl AddAssign for Polynomial {
     for (idx, &coefficient) in other.coefficients.iter().enumerate() {
       self.coefficients[idx] += coefficient;
     }
+
+    self
+  }
+}
+
+impl AddAssign for Polynomial {
+  fn add_assign(&mut self, other: Polynomial) {
+    self + &other;
   }
 }
 
@@ -125,23 +135,14 @@ impl Add for Polynomial {
   type Output = Polynomial;
 
   fn add(mut self, other: Polynomial) -> Polynomial {
-    self += other;
-    self
+    (&mut self + &other).clone()
   }
 }
 
-// impl Add for &'static Polynomial {
-  // type Output = Polynomial;
-//
-  // fn add(mut self, other: &Polynomial) -> Polynomial {
-    // let mut k = *self;
-    // k += *other;
-    // k
-  // }
-// }
+impl<'a, 'b> Sub<&'b Polynomial> for &'a mut Polynomial {
+  type Output = &'a Polynomial;
 
-impl SubAssign for Polynomial {
-  fn sub_assign(&mut self, other: Polynomial) {
+  fn sub(self, other: &'b Polynomial) -> &'a Polynomial {
     if other.coefficients.len() > self.coefficients.len() {
       self.coefficients.resize(other.coefficients.len(), 0.0);
     }
@@ -149,6 +150,14 @@ impl SubAssign for Polynomial {
     for (idx, &coefficient) in other.coefficients.iter().enumerate() {
       self.coefficients[idx] -= coefficient;
     }
+
+    self
+  }
+}
+
+impl SubAssign for Polynomial {
+  fn sub_assign(&mut self, other: Polynomial) {
+    self - &other;
   }
 }
 
@@ -156,13 +165,14 @@ impl Sub for Polynomial {
   type Output = Polynomial;
 
   fn sub(mut self, other: Polynomial) -> Polynomial {
-    self -= other;
-    self
+    (&mut self - &other).clone()
   }
 }
 
-impl MulAssign for Polynomial {
-  fn mul_assign(&mut self, other: Polynomial) {
+impl<'a, 'b> Mul<&'b Polynomial> for &'a mut Polynomial {
+  type Output = &'a Polynomial;
+
+  fn mul(self, other: &'b Polynomial) -> &'a Polynomial {
     let self_degree = self.degree();
     let other_degree = other.degree();
 
@@ -180,6 +190,14 @@ impl MulAssign for Polynomial {
 
       self.coefficients = c;
     }
+
+    self
+  }
+}
+
+impl MulAssign for Polynomial {
+  fn mul_assign(&mut self, other: Polynomial) {
+    self * &other;
   }
 }
 
@@ -187,8 +205,7 @@ impl Mul for Polynomial {
   type Output = Polynomial;
 
   fn mul(mut self, other: Polynomial) -> Polynomial {
-    self *= other;
-    self
+    (&mut self * &other).clone()
   }
 }
 
@@ -206,8 +223,10 @@ impl MulAssign<f64> for Polynomial {
   }
 }
 
-impl DivAssign for Polynomial {
-  fn div_assign(&mut self, other: Polynomial) {
+impl<'a, 'b> Div<&'b Polynomial> for &'a mut Polynomial {
+  type Output = &'a Polynomial;
+
+  fn div(self, other: &'b Polynomial) -> &'a Polynomial {
     let mut self_degree = self.degree();
     let other_degree = other.degree();
 
@@ -241,6 +260,14 @@ impl DivAssign for Polynomial {
 
       self.coefficients = q.coefficients;
     }
+
+    self
+  }
+}
+
+impl DivAssign for Polynomial {
+  fn div_assign(&mut self, other: Polynomial) {
+    self / &other;
   }
 }
 
@@ -248,8 +275,7 @@ impl Div for Polynomial {
   type Output = Polynomial;
 
   fn div(mut self, other: Polynomial) -> Polynomial {
-    self /= other;
-    self
+    (&mut self / &other).clone()
   }
 }
 
