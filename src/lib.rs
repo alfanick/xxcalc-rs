@@ -1,4 +1,5 @@
 pub mod polynomial;
+#[macro_use]
 pub mod tokenizer;
 pub mod parser;
 pub mod evaluator;

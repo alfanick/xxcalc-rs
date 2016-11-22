@@ -42,7 +42,7 @@ impl Default for PolynomialEvaluator {
 }
 
 impl TokensReducer for PolynomialEvaluator {
-  fn process(&self, tokens: TokenList) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
@@ -68,7 +68,7 @@ impl Default for PolynomialParser {
 }
 
 impl TokensProcessor for PolynomialParser {
-  fn process(&self, tokens: &TokenList) -> Result<TokenList, ParsingError> {
+  fn process(&mut self, tokens: &TokenList) -> Result<&TokenList, ParsingError> {
     self.parser.process(tokens)
   }
 }

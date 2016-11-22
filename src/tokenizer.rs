@@ -12,12 +12,6 @@ pub enum Token {
   Unknown
 }
 
-// #[inline]
-// pub fn tokenize(line: &str) -> &TokenList {
-//   let mut t = Tokenizer::default();
-//   t.process(line)
-// }
-
 pub struct Tokenizer {
   tokens: TokenList,
 
@@ -58,7 +52,6 @@ pub trait StringProcessor {
 
 impl StringProcessor for Tokenizer {
   fn process(&mut self, line: &str) -> &TokenList {
-    // self.tokens.reserve(line.len() / 7);
     self.tokens.clear();
     self.value_position = 0;
     self.value.clear();
@@ -203,61 +196,69 @@ impl Tokenizer {
   }
 }
 
+macro_rules! tokenize {
+  ($x:expr) => (Tokenizer::default().process($x).to_owned())
+}
+
+macro_rules! tokenize_ref {
+  ($x:expr) => (Tokenizer::default().process($x))
+}
+
 #[cfg(test)]
 mod tests {
   use tokenizer::*;
 
   #[test]
   fn test_brackets() {
-    assert_eq!(tokenize("(").first(), Some(&(0, Token::BracketOpening)));
-    assert_eq!(tokenize(")").first(), Some(&(0, Token::BracketClosing)));
+    assert_eq!(tokenize!("(").first(), Some(&(0, Token::BracketOpening)));
+    assert_eq!(tokenize!(")").first(), Some(&(0, Token::BracketClosing)));
   }
 
   #[test]
   fn test_operators() {
-    assert_eq!(tokenize("2+2").iter().skip(1).next(), Some(&(1, Token::Operator('+'))));
-    assert_eq!(tokenize("2-2").iter().skip(1).next(), Some(&(1, Token::Operator('-'))));
-    assert_eq!(tokenize("*").first(), Some(&(0, Token::Operator('*'))));
-    assert_eq!(tokenize("/").first(), Some(&(0, Token::Operator('/'))));
-    assert_eq!(tokenize("=").first(), Some(&(0, Token::Operator('='))));
-    assert_eq!(tokenize("^").first(), Some(&(0, Token::Operator('^'))));
+    assert_eq!(tokenize!("2+2").iter().skip(1).next(), Some(&(1, Token::Operator('+'))));
+    assert_eq!(tokenize!("2-2").iter().skip(1).next(), Some(&(1, Token::Operator('-'))));
+    assert_eq!(tokenize!("*").first(), Some(&(0, Token::Operator('*'))));
+    assert_eq!(tokenize!("/").first(), Some(&(0, Token::Operator('/'))));
+    assert_eq!(tokenize!("=").first(), Some(&(0, Token::Operator('='))));
+    assert_eq!(tokenize!("^").first(), Some(&(0, Token::Operator('^'))));
   }
 
   #[test]
   fn test_identifiers() {
-    assert_eq!(tokenize("x").first(), Some(&(0, Token::Identifier("x".to_string()))));
-    assert_eq!(tokenize("x123x").first(), Some(&(0, Token::Identifier("x123x".to_string()))));
-    assert_eq!(tokenize("_foo_bar").first(), Some(&(0, Token::Identifier("_foo_bar".to_string()))));
-    assert_eq!(tokenize("_foo_123").first(), Some(&(0, Token::Identifier("_foo_123".to_string()))));
+    assert_eq!(tokenize!("x").first(), Some(&(0, Token::Identifier("x".to_string()))));
+    assert_eq!(tokenize!("x123x").first(), Some(&(0, Token::Identifier("x123x".to_string()))));
+    assert_eq!(tokenize!("_foo_bar").first(), Some(&(0, Token::Identifier("_foo_bar".to_string()))));
+    assert_eq!(tokenize!("_foo_123").first(), Some(&(0, Token::Identifier("_foo_123".to_string()))));
   }
 
   #[test]
   fn test_numbers() {
-    assert_eq!(tokenize("1").first(), Some(&(0, Token::Number(1.0))));
-    assert_eq!(tokenize("1.23").first(), Some(&(0, Token::Number(1.23))));
-    assert_eq!(tokenize(".23").first(), Some(&(0, Token::Number(0.23))));
+    assert_eq!(tokenize!("1").first(), Some(&(0, Token::Number(1.0))));
+    assert_eq!(tokenize!("1.23").first(), Some(&(0, Token::Number(1.23))));
+    assert_eq!(tokenize!(".23").first(), Some(&(0, Token::Number(0.23))));
   }
 
   #[test]
   fn test_numbers_scientific() {
-    assert_eq!(tokenize("1e23").first(), Some(&(0, Token::Number(1.0e23))));
-    assert_eq!(tokenize("1e-23").first(), Some(&(0, Token::Number(1.0e-23))));
-    assert_eq!(tokenize("1.01e+23").first(), Some(&(0, Token::Number(1.01e23))));
+    assert_eq!(tokenize!("1e23").first(), Some(&(0, Token::Number(1.0e23))));
+    assert_eq!(tokenize!("1e-23").first(), Some(&(0, Token::Number(1.0e-23))));
+    assert_eq!(tokenize!("1.01e+23").first(), Some(&(0, Token::Number(1.01e23))));
   }
 
   #[test]
   fn test_expressions() {
-    let mut t = tokenize("2+2");
+    let mut t = tokenize!("2+2");
     assert_eq!(t.remove(0), ((0, Token::Number(2.0))));
     assert_eq!(t.remove(0), ((1, Token::Operator('+'))));
     assert_eq!(t.remove(0), ((2, Token::Number(2.0))));
 
-    let mut t = tokenize("2+x");
+    let mut t = tokenize!("2+x");
     assert_eq!(t.remove(0), ((0, Token::Number(2.0))));
     assert_eq!(t.remove(0), ((1, Token::Operator('+'))));
     assert_eq!(t.remove(0), ((2, Token::Identifier("x".to_string()))));
 
-    let mut t = tokenize("x=2");
+    let mut t = tokenize!("x=2");
     assert_eq!(t.remove(0), ((0, Token::Identifier("x".to_string()))));
     assert_eq!(t.remove(0), ((1, Token::Operator('='))));
     assert_eq!(t.remove(0), ((2, Token::Number(2.0))));
@@ -265,20 +266,20 @@ mod tests {
 
   #[test]
   fn test_numbers_signed() {
-    assert_eq!(tokenize("-2").first(), Some(&(0, Token::Number(-2.0))));
-    assert_eq!(tokenize(" -2").first(), Some(&(0, Token::Number(-2.0))));
-    assert_eq!(tokenize("+2").first(), Some(&(0, Token::Number(2.0))));
+    assert_eq!(tokenize!("-2").first(), Some(&(0, Token::Number(-2.0))));
+    assert_eq!(tokenize!(" -2").first(), Some(&(0, Token::Number(-2.0))));
+    assert_eq!(tokenize!("+2").first(), Some(&(0, Token::Number(2.0))));
 
-    assert_eq!(tokenize("(-2)").iter().skip(1).next(), Some(&(1, Token::Number(-2.0))));
-    assert_eq!(tokenize("( -2)").iter().skip(1).next(), Some(&(1, Token::Number(-2.0))));
-    assert_eq!(tokenize("(+2)").iter().skip(1).next(), Some(&(1, Token::Number(2.0))));
+    assert_eq!(tokenize!("(-2)").iter().skip(1).next(), Some(&(1, Token::Number(-2.0))));
+    assert_eq!(tokenize!("( -2)").iter().skip(1).next(), Some(&(1, Token::Number(-2.0))));
+    assert_eq!(tokenize!("(+2)").iter().skip(1).next(), Some(&(1, Token::Number(2.0))));
 
-    let mut t = tokenize("2-+2");
+    let mut t = tokenize!("2-+2");
     assert_eq!(t.remove(0), ((0, Token::Number(2.0))));
     assert_eq!(t.remove(0), ((1, Token::Operator('-'))));
     assert_eq!(t.remove(0), ((2, Token::Number(2.0))));
 
-    let mut t = tokenize("2--2");
+    let mut t = tokenize!("2--2");
     assert_eq!(t.remove(0), ((0, Token::Number(2.0))));
     assert_eq!(t.remove(0), ((1, Token::Operator('-'))));
     assert_eq!(t.remove(0), ((2, Token::Number(-2.0))));
@@ -286,19 +287,19 @@ mod tests {
 
   #[test]
   fn test_implicit_multiplication() {
-    let mut t = tokenize("2--x");
+    let mut t = tokenize!("2--x");
     assert_eq!(t.remove(0), ((0, Token::Number(2.0))));
     assert_eq!(t.remove(0), ((1, Token::Operator('-'))));
     assert_eq!(t.remove(0), ((2, Token::Number(-1.0))));
     assert_eq!(t.remove(0), ((2, Token::Operator('*'))));
     assert_eq!(t.remove(0), ((3, Token::Identifier("x".to_string()))));
 
-    let mut t = tokenize("-2x");
+    let mut t = tokenize!("-2x");
     assert_eq!(t.remove(0), ((0, Token::Number(-2.0))));
     assert_eq!(t.remove(0), ((0, Token::Operator('*'))));
     assert_eq!(t.remove(0), ((2, Token::Identifier("x".to_string()))));
 
-    let mut t = tokenize("-2(4)");
+    let mut t = tokenize!("-2(4)");
     assert_eq!(t.remove(0), ((0, Token::Number(-2.0))));
     assert_eq!(t.remove(0), ((0, Token::Operator('*'))));
     assert_eq!(t.remove(0), ((2, Token::BracketOpening)));

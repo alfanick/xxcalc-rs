@@ -17,7 +17,7 @@ pub enum EvaluationError {
 }
 
 pub trait TokensReducer {
-  fn process(&self, tokens: TokenList) -> Result<Polynomial, EvaluationError>;
+  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError>;
 }
 
 pub type FunctionHandle = Box<Fn(Vec<Polynomial>) -> Result<Polynomial, EvaluationError>>;
@@ -54,18 +54,18 @@ impl Default for Evaluator {
 }
 
 impl TokensReducer for Evaluator {
-  fn process(&self, tokens: TokenList) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError> {
     let mut stack: Vec<Polynomial> = Vec::with_capacity(10);
 
-    for (position, token) in tokens {
-      match token {
+    for &(position, ref token) in tokens {
+      match *token {
         Token::Number(x) => stack.push(Polynomial::constant(x)),
         Token::Operator(x) => {
           let result = try!(self.call_function(&x.to_string(), position, &mut stack));
           stack.push(result);
         },
-        Token::Identifier(x) => {
-          if let Some(constant) = self.constants.get(&x) {
+        Token::Identifier(ref x) => {
+          if let Some(constant) = self.constants.get(x) {
             stack.push(constant.clone());
             continue;
           }
@@ -172,26 +172,26 @@ mod tests {
     parser.register_operator('*', Operator::new(5, OperatorAssociativity::Left));
     evaluator.register_function("*", Function::new(2, Box::new(multiplication)));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("2+4")).unwrap()), Ok(Polynomial::constant(6.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("2*4")).unwrap()), Ok(Polynomial::constant(8.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("2+4*6")).unwrap()), Ok(Polynomial::constant(26.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("2*4+6")).unwrap()), Ok(Polynomial::constant(14.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("(2+4)*6")).unwrap()), Ok(Polynomial::constant(36.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2+4")).unwrap()), Ok(Polynomial::constant(6.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2*4")).unwrap()), Ok(Polynomial::constant(8.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2+4*6")).unwrap()), Ok(Polynomial::constant(26.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2*4+6")).unwrap()), Ok(Polynomial::constant(14.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("(2+4)*6")).unwrap()), Ok(Polynomial::constant(36.0)));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("2+-4")).unwrap()), Ok(Polynomial::constant(-2.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("2--4")).unwrap()), Ok(Polynomial::constant(6.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("2++4")).unwrap()), Ok(Polynomial::constant(6.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2+-4")).unwrap()), Ok(Polynomial::constant(-2.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2--4")).unwrap()), Ok(Polynomial::constant(6.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2++4")).unwrap()), Ok(Polynomial::constant(6.0)));
   }
 
   #[test]
   fn test_constants() {
     let mut evaluator = Evaluator::new();
-    let parser = Parser::new();
+    let mut parser = Parser::new();
 
-    assert_eq!(evaluator.process(parser.process(tokenize("foo")).unwrap()), Err(EvaluationError::UnknownSymbol("foo".to_string(), 0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("foo")).unwrap()), Err(EvaluationError::UnknownSymbol("foo".to_string(), 0)));
 
     evaluator.register_constant("foo", Polynomial::constant(123.0));
-    assert_eq!(evaluator.process(parser.process(tokenize("foo")).unwrap()), Ok(Polynomial::constant(123.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("foo")).unwrap()), Ok(Polynomial::constant(123.0)));
   }
 
   #[test]
@@ -206,16 +206,16 @@ mod tests {
     parser.register_operator('*', Operator::new(5, OperatorAssociativity::Left));
     evaluator.register_function("*", Function::new(2, Box::new(multiplication)));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("double(2)")).unwrap()), Err(EvaluationError::UnknownSymbol("double".to_string(), 0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("double(2)")).unwrap()), Err(EvaluationError::UnknownSymbol("double".to_string(), 0)));
 
     evaluator.register_function("double", Function::new(1, Box::new(|args|{
       Ok(args[0].clone() * Polynomial::constant(2.0))
     })));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("double(2)")).unwrap()), Ok(Polynomial::constant(4.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("double(4*-0.5)")).unwrap()), Ok(Polynomial::constant(-4.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("double()")).unwrap()), Err(EvaluationError::ArgumentMissing("double".to_string(), 1, 0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("double(1, 2)")).unwrap()), Err(EvaluationError::MultipleExpressions));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("double(2)")).unwrap()), Ok(Polynomial::constant(4.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("double(4*-0.5)")).unwrap()), Ok(Polynomial::constant(-4.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("double()")).unwrap()), Err(EvaluationError::ArgumentMissing("double".to_string(), 1, 0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("double(1, 2)")).unwrap()), Err(EvaluationError::MultipleExpressions));
   }
 
   #[test]
@@ -230,11 +230,11 @@ mod tests {
       Ok(Polynomial::constant(1.0))
     })));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("unit()")).unwrap()), Ok(Polynomial::constant(1.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("unit")).unwrap()), Ok(Polynomial::constant(1.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("unit*2")).unwrap()), Ok(Polynomial::constant(2.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("2unit")).unwrap()), Ok(Polynomial::constant(2.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("unit(2)")).unwrap()), Err(EvaluationError::MultipleExpressions));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("unit()")).unwrap()), Ok(Polynomial::constant(1.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("unit")).unwrap()), Ok(Polynomial::constant(1.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("unit*2")).unwrap()), Ok(Polynomial::constant(2.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2unit")).unwrap()), Ok(Polynomial::constant(2.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("unit(2)")).unwrap()), Err(EvaluationError::MultipleExpressions));
   }
 
   #[test]
@@ -249,17 +249,17 @@ mod tests {
       Ok(Polynomial::constant(try!(args[0].clone().as_f64()) % try!(args[1].clone().as_f64())))
     })));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("mod(17, 4)")).unwrap()), Ok(Polynomial::constant(1.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("mod(1)")).unwrap()), Err(EvaluationError::ArgumentMissing("mod".to_string(), 2, 0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("mod(1, 2, 3)")).unwrap()), Err(EvaluationError::MultipleExpressions));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("mod(17, 4)")).unwrap()), Ok(Polynomial::constant(1.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("mod(1)")).unwrap()), Err(EvaluationError::ArgumentMissing("mod".to_string(), 2, 0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("mod(1, 2, 3)")).unwrap()), Err(EvaluationError::MultipleExpressions));
   }
 
   #[test]
   fn test_multiple_expression() {
     let evaluator = Evaluator::new();
-    let parser = Parser::new();
+    let mut parser = Parser::new();
 
-    assert_eq!(evaluator.process(parser.process(tokenize("2, 2")).unwrap()), Err(EvaluationError::MultipleExpressions));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("2, 2")).unwrap()), Err(EvaluationError::MultipleExpressions));
   }
 
   #[test]
@@ -274,8 +274,8 @@ mod tests {
 
     evaluator.register_constant("x", Polynomial::linear(0.0, 1.0));
 
-    assert_eq!(evaluator.process(parser.process(tokenize("x")).unwrap()), Ok(Polynomial::linear(0.0, 1.0)));
-    assert_eq!(evaluator.process(parser.process(tokenize("x*x")).unwrap()), Ok(Polynomial::new(&[0.0, 0.0, 1.0])));
-    assert_eq!(evaluator.process(parser.process(tokenize("x+x")).unwrap()), evaluator.process(parser.process(tokenize("2x")).unwrap()));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("x")).unwrap()), Ok(Polynomial::linear(0.0, 1.0)));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("x*x")).unwrap()), Ok(Polynomial::new(&[0.0, 0.0, 1.0])));
+    assert_eq!(evaluator.process(parser.process(tokenize_ref!("x+x")).unwrap()), evaluator.process(parser.process(tokenize_ref!("2x")).unwrap()));
   }
 }

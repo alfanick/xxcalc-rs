@@ -12,7 +12,7 @@ fn main() {
   let _ = rl.load_history(".xxcalcrs_history");
 
   let mut tokenizer = Tokenizer::default();
-  let parser = LinearSolverParser::default().parser;
+  let mut parser = LinearSolverParser::default().parser;
   let evaluator = LinearSolverEvaluator::default().evaluator;
 
   while let Ok(input) = rl.readline(">>> ") {

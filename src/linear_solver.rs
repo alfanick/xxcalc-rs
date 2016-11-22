@@ -36,7 +36,7 @@ impl Default for LinearSolverEvaluator {
 }
 
 impl TokensReducer for LinearSolverEvaluator {
-  fn process(&self, tokens: TokenList) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
@@ -60,11 +60,10 @@ impl Default for LinearSolverParser {
 }
 
 impl TokensProcessor for LinearSolverParser {
-  fn process(&self, tokens: &TokenList) -> Result<TokenList, ParsingError> {
+  fn process(&mut self, tokens: &TokenList) -> Result<&TokenList, ParsingError> {
     self.parser.process(tokens)
   }
 }
-
 mod functions {
   use super::*;
   use evaluator::EvaluationError;

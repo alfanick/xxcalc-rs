@@ -27,7 +27,7 @@ pub trait Calculator<T, P, E>
         E: TokensReducer + Default {
   fn process(&self, line: &str) -> Result<Polynomial, CalculationError> {
     let mut tokenizer = T::default();
-    let parser = P::default();
+    let mut parser = P::default();
     let evaluator = E::default();
 
     let tokens = tokenizer.process(line);
