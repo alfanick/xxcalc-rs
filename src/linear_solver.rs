@@ -60,7 +60,7 @@ impl Default for LinearSolverParser {
 }
 
 impl TokensProcessor for LinearSolverParser {
-  fn process(&self, tokens: TokenList) -> Result<TokenList, ParsingError> {
+  fn process(&self, tokens: &TokenList) -> Result<TokenList, ParsingError> {
     self.parser.process(tokens)
   }
 }

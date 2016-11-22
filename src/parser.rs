@@ -34,24 +34,24 @@ impl Default for Parser {
 }
 
 pub trait TokensProcessor {
-  fn process(&self, tokens: TokenList) -> Result<TokenList, ParsingError>;
+  fn process(&self, tokens: &TokenList) -> Result<TokenList, ParsingError>;
 }
 
 impl TokensProcessor for Parser {
-  fn process(&self, tokens: TokenList) -> Result<TokenList, ParsingError> {
+  fn process(&self, tokens: &TokenList) -> Result<TokenList, ParsingError> {
     let mut stack = TokenList::with_capacity(10);
     let mut output = TokenList::with_capacity(tokens.len());
-    let mut iter = tokens.into_iter().peekable();
+    let mut iter = tokens.iter().peekable();
 
-    while let Some((position, token)) = iter.next() {
-      match token {
-        Token::BracketOpening => stack.push((position, token)),
-        Token::Number(_) => output.push((position, token)),
+    while let Some(&(position, ref token)) = iter.next() {
+      match *token {
+        Token::BracketOpening => stack.push((position, token.clone())),
+        Token::Number(_) => output.push((position, token.clone())),
         Token::Identifier(_) => {
-          if let Some(&(_, Token::BracketOpening)) = iter.peek() {
-            stack.push((position, token));
+          if let Some(&&(_, Token::BracketOpening)) = iter.peek() {
+            stack.push((position, token.clone()));
           } else {
-            output.push((position, token));
+            output.push((position, token.clone()));
           }
         },
         Token::Separator => {
@@ -78,7 +78,7 @@ impl TokensProcessor for Parser {
           }
 
           if let Some(_) = self.operators.get(&name) {
-            stack.push((position, token));
+            stack.push((position, token.clone()));
           } else {
             return Err(ParsingError::UnknownOperator(name, position));
           }

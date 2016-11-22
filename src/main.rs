@@ -1,5 +1,5 @@
 extern crate xxcalc;
-use xxcalc::tokenizer::tokenize;
+use xxcalc::tokenizer::{StringProcessor, Tokenizer};
 use xxcalc::parser::TokensProcessor;
 use xxcalc::evaluator::TokensReducer;
 use xxcalc::linear_solver::{LinearSolverParser, LinearSolverEvaluator};
@@ -11,6 +11,7 @@ fn main() {
   let mut rl = Editor::<()>::new();
   let _ = rl.load_history(".xxcalcrs_history");
 
+  let mut tokenizer = Tokenizer::default();
   let parser = LinearSolverParser::default().parser;
   let evaluator = LinearSolverEvaluator::default().evaluator;
 
@@ -19,7 +20,8 @@ fn main() {
       rl.add_history_entry(&input);
     }
 
-    match parser.process(tokenize(&input)) {
+    let tokens = tokenizer.process(&input);
+    match parser.process(tokens) {
       Ok(t) => {
         match evaluator.process(t) {
           Ok(result) => println!("{}", result.as_string("x")),

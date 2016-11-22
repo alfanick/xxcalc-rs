@@ -1,6 +1,6 @@
 pub type TokenList = Vec<(usize, Token)>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Token {
   BracketOpening,
   BracketClosing,
@@ -12,10 +12,11 @@ pub enum Token {
   Unknown
 }
 
-#[inline]
-pub fn tokenize(line: &str) -> TokenList {
-  Tokenizer::default().process(line)
-}
+// #[inline]
+// pub fn tokenize(line: &str) -> &TokenList {
+//   let mut t = Tokenizer::default();
+//   t.process(line)
+// }
 
 pub struct Tokenizer {
   tokens: TokenList,
@@ -52,12 +53,17 @@ impl Default for Tokenizer {
 }
 
 pub trait StringProcessor {
-  fn process(self: Self, line: &str) -> TokenList;
+  fn process(self: &mut Self, line: &str) -> &TokenList;
 }
 
 impl StringProcessor for Tokenizer {
-  fn process(mut self, line: &str) -> TokenList {
-    self.tokens.reserve(line.len() / 7);
+  fn process(&mut self, line: &str) -> &TokenList {
+    // self.tokens.reserve(line.len() / 7);
+    self.tokens.clear();
+    self.value_position = 0;
+    self.value.clear();
+    self.state = State::Front;
+    self.previous_state = State::General;
 
     for (position, character) in line.chars().enumerate() {
       if character.is_whitespace() {
@@ -140,7 +146,7 @@ impl StringProcessor for Tokenizer {
 
     self.push_number_or_identifier(None);
 
-    self.tokens
+    &self.tokens
   }
 }
 
