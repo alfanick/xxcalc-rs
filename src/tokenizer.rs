@@ -58,6 +58,10 @@ pub trait StringProcessor {
 impl StringProcessor for Tokenizer {
   fn process(mut self, line: &str) -> TokenList {
     for (position, character) in line.chars().enumerate() {
+      if character.is_whitespace() {
+        continue;
+      }
+
       let mut token = Token::Skip;
       self.previous_state = self.state;
 
@@ -118,7 +122,6 @@ impl StringProcessor for Tokenizer {
           self.value.push(character);
           self.state = State::Identifier;
         },
-        _ if character.is_whitespace() => self.state = State::Front,
         _ => {
           token = Token::Unknown;
           self.state = State::General;

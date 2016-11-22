@@ -103,7 +103,9 @@ impl Index<usize> for Polynomial {
 
 impl IndexMut<usize> for Polynomial {
   fn index_mut(&mut self, idx: usize) -> &mut f64 {
-    self.coefficients.resize(idx + 1, 0.0);
+    if idx >= self.coefficients.len() {
+      self.coefficients.resize(idx + 1, 0.0);
+    }
 
     &mut self.coefficients[idx]
   }

@@ -1,6 +1,7 @@
 use polynomial::{Polynomial, PolynomialError};
 use tokenizer::{TokenList, Token};
 use std::collections::BTreeMap;
+use linear_solver::SolvingError;
 
 
 #[derive(Debug, PartialEq)]
@@ -10,6 +11,7 @@ pub enum EvaluationError {
   MultipleExpressions,
   ConflictingName(String),
   PolynomialError(PolynomialError),
+  SolvingError(SolvingError),
   NonConstantExponent,
   NonNaturalExponent
 }
@@ -256,7 +258,6 @@ mod tests {
     let evaluator = Evaluator::new();
     let parser = Parser::new();
 
-    assert_eq!(evaluator.process(parser.process(tokenize("2 2")).unwrap()), Err(EvaluationError::MultipleExpressions));
     assert_eq!(evaluator.process(parser.process(tokenize("2, 2")).unwrap()), Err(EvaluationError::MultipleExpressions));
   }
 

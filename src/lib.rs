@@ -4,3 +4,4 @@ pub mod parser;
 pub mod evaluator;
 pub mod calculator;
 pub mod polynomial_calculator;
+pub mod linear_solver;

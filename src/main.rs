@@ -2,20 +2,17 @@ extern crate xxcalc;
 use xxcalc::tokenizer::tokenize;
 use xxcalc::parser::TokensProcessor;
 use xxcalc::evaluator::TokensReducer;
-use xxcalc::polynomial_calculator::PolynomialParser;
-use xxcalc::polynomial_calculator::PolynomialEvaluator;
+use xxcalc::linear_solver::{LinearSolverParser, LinearSolverEvaluator};
 
 extern crate rustyline;
 use rustyline::Editor;
 
-// TODO linear solver
-// TODO function mutating state
 fn main() {
   let mut rl = Editor::<()>::new();
   let _ = rl.load_history(".xxcalcrs_history");
 
-  let parser = PolynomialParser::default().parser;
-  let evaluator = PolynomialEvaluator::default().evaluator;
+  let parser = LinearSolverParser::default().parser;
+  let evaluator = LinearSolverEvaluator::default().evaluator;
 
   while let Ok(input) = rl.readline(">>> ") {
     if input.len() < 1024 {

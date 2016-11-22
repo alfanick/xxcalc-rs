@@ -7,10 +7,6 @@ use std::f64::consts::{PI, E};
 
 pub struct PolynomialCalculator;
 
-impl PolynomialCalculator {
-
-}
-
 impl Calculator<Tokenizer, PolynomialParser, PolynomialEvaluator> for PolynomialCalculator {
 
 }
