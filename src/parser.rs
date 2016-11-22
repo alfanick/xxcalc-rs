@@ -40,7 +40,7 @@ pub trait TokensProcessor {
 impl TokensProcessor for Parser {
   fn process(&self, tokens: TokenList) -> Result<TokenList, ParsingError> {
     let mut stack = TokenList::with_capacity(10);
-    let mut output = TokenList::with_capacity(tokens.len()/2);
+    let mut output = TokenList::with_capacity(tokens.len());
     let mut iter = tokens.into_iter().peekable();
 
     while let Some((position, token)) = iter.next() {

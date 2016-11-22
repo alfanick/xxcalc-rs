@@ -57,7 +57,7 @@ pub trait StringProcessor {
 
 impl StringProcessor for Tokenizer {
   fn process(mut self, line: &str) -> TokenList {
-    self.tokens.reserve(line.len() / 2);
+    self.tokens.reserve(line.len() / 7);
 
     for (position, character) in line.chars().enumerate() {
       if character.is_whitespace() {
