@@ -54,14 +54,18 @@ impl Polynomial {
                        } else {
                          match exponent {
                            0 => Some(coefficient.to_string()),
-                           1 => Some(format!("{}{}", coefficient, name)),
+                           1 if coefficient > 1.0 => Some(format!("{}{}", coefficient, name)),
+                           1 => Some(format!("{}", name)),
                            _ => Some(format!("{}{}^{}", coefficient, name, exponent))
                          }
                        }
                      })
                      .fold(String::with_capacity(self.coefficients.len() * 5), |mut expr, x| {
                        if !x.starts_with('-') && !expr.is_empty() {
-                         expr.push('+');
+                         if x == "0" {
+                          return expr;
+                         }
+                        expr.push('+');
                        }
 
                        expr.push_str(&x); expr
@@ -299,6 +303,8 @@ mod tests {
   fn test_string_conversion() {
     assert_eq!(Polynomial::zero().as_string("x"), "0");
     assert_eq!(Polynomial::constant(1.0).as_string("x"), "1");
+    assert_eq!(Polynomial::linear(0.0, 1.0).as_string("x"), "x");
+    assert_eq!(Polynomial::linear(0.0, 2.0).as_string("x"), "2x");
     assert_eq!(Polynomial::linear(1.0, 2.0).as_string("x"), "2x+1");
     assert_eq!(Polynomial::linear(1.0, 2.0).as_string("z"), "2z+1");
     assert_eq!(Polynomial::new(&[1.0, 0.0, 2.0]).as_string("x"), "2x^2+1");
