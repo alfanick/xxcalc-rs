@@ -38,37 +38,37 @@ pub trait TokensProcessor {
 }
 
 impl TokensProcessor for Parser {
-  fn process(&self, mut tokens: TokenList) -> Result<TokenList, ParsingError> {
-    let mut stack = TokenList::new();
-    let mut output = TokenList::new();
+  fn process(&self, tokens: TokenList) -> Result<TokenList, ParsingError> {
+    let mut stack = TokenList::with_capacity(10);
+    let mut output = TokenList::with_capacity(tokens.len()/2);
+    let mut iter = tokens.into_iter().peekable();
 
-    while let Some((position, token)) = tokens.pop_front() {
+    while let Some((position, token)) = iter.next() {
       match token {
-        Token::BracketOpening => stack.push_back((position, token)),
-        Token::Number(_) => output.push_back((position, token)),
+        Token::BracketOpening => stack.push((position, token)),
+        Token::Number(_) => output.push((position, token)),
         Token::Identifier(_) => {
-          if let Some(&(_, Token::BracketOpening)) = tokens.front() {
-            stack.push_back((position, token));
+          if let Some(&(_, Token::BracketOpening)) = iter.peek() {
+            stack.push((position, token));
           } else {
-            output.push_back((position, token));
+            output.push((position, token));
           }
         },
         Token::Separator => {
           while !stack.is_empty() {
-            match stack.back() {
+            match stack.last() {
               Some(&(_, Token::BracketOpening)) => break,
-              Some(_) => output.push_back(stack.pop_back().unwrap()),
+              Some(_) => output.push(stack.pop().unwrap()),
               _ => break
             }
           }
-          // TODO
         },
         Token::Operator(name) => {
           while !stack.is_empty() {
-            match stack.back() {
+            match stack.last() {
               Some(&(_, Token::Operator(_))) | Some(&(_, Token::Identifier(_))) => {
-                if self.lower_precedence(&token, &stack.back().unwrap().1) {
-                  output.push_back(stack.pop_back().unwrap());
+                if self.lower_precedence(&token, &stack.last().unwrap().1) {
+                  output.push(stack.pop().unwrap());
                 } else {
                   break;
                 }
@@ -78,7 +78,7 @@ impl TokensProcessor for Parser {
           }
 
           if let Some(_) = self.operators.get(&name) {
-            stack.push_back((position, token));
+            stack.push((position, token));
           } else {
             return Err(ParsingError::UnknownOperator(name, position));
           }
@@ -87,13 +87,13 @@ impl TokensProcessor for Parser {
           let mut found = false;
 
           while !stack.is_empty() {
-            match stack.back() {
+            match stack.last() {
               Some(&(_, Token::BracketOpening)) => {
                 found = true;
-                stack.pop_back();
+                stack.pop();
                 break;
               },
-              _ => output.push_back(stack.pop_back().unwrap())
+              _ => output.push(stack.pop().unwrap())
             }
           }
 
@@ -106,9 +106,9 @@ impl TokensProcessor for Parser {
     }
 
     while !stack.is_empty() {
-      match stack.back() {
+      match stack.last() {
         Some(&(position, Token::BracketOpening)) => return Err(ParsingError::MissingBracket(position)),
-        Some(_) => output.push_back(stack.pop_back().unwrap()),
+        Some(_) => output.push(stack.pop().unwrap()),
         _ => unreachable!()
       }
     }
@@ -164,7 +164,7 @@ mod tests {
 
     parser.register_operator('=', Operator(-1, OperatorAssociativity::Left));
 
-    assert_eq!(parser.process(tokenize("2=2")).unwrap().back().unwrap(), &(1, Token::Operator('=')));
+    assert_eq!(parser.process(tokenize("2=2")).unwrap().last().unwrap(), &(1, Token::Operator('=')));
   }
 
   #[test]
@@ -177,12 +177,12 @@ mod tests {
     parser.register_operator('/', Operator(5, OperatorAssociativity::Left));
     parser.register_operator('^', Operator(10, OperatorAssociativity::Right));
 
-    assert_eq!(parser.process(tokenize("2+2*2")).unwrap().back().unwrap(), &(1, Token::Operator('+')));
-    assert_eq!(parser.process(tokenize("2*2+2")).unwrap().back().unwrap(), &(3, Token::Operator('+')));
-    assert_eq!(parser.process(tokenize("2*2/2")).unwrap().back().unwrap(), &(3, Token::Operator('/')));
-    assert_eq!(parser.process(tokenize("2/2*2")).unwrap().back().unwrap(), &(3, Token::Operator('*')));
-    assert_eq!(parser.process(tokenize("2*2^2")).unwrap().back().unwrap(), &(1, Token::Operator('*')));
-    assert_eq!(parser.process(tokenize("2^2*2")).unwrap().back().unwrap(), &(3, Token::Operator('*')));
+    assert_eq!(parser.process(tokenize("2+2*2")).unwrap().last().unwrap(), &(1, Token::Operator('+')));
+    assert_eq!(parser.process(tokenize("2*2+2")).unwrap().last().unwrap(), &(3, Token::Operator('+')));
+    assert_eq!(parser.process(tokenize("2*2/2")).unwrap().last().unwrap(), &(3, Token::Operator('/')));
+    assert_eq!(parser.process(tokenize("2/2*2")).unwrap().last().unwrap(), &(3, Token::Operator('*')));
+    assert_eq!(parser.process(tokenize("2*2^2")).unwrap().last().unwrap(), &(1, Token::Operator('*')));
+    assert_eq!(parser.process(tokenize("2^2*2")).unwrap().last().unwrap(), &(3, Token::Operator('*')));
 
     assert_eq!(parser.process(tokenize("2+2+2")).unwrap().iter().rev().skip(1).next().unwrap(), &(4, Token::Number(2.0)));
     assert_eq!(parser.process(tokenize("2^2^2")).unwrap().iter().rev().skip(1).next().unwrap(), &(3, Token::Operator('^')));
@@ -193,11 +193,11 @@ mod tests {
     let mut parser = Parser::new();
     parser.register_operator('*', Operator(5, OperatorAssociativity::Left));
 
-    assert_eq!(parser.process(tokenize("x")).unwrap().front().unwrap(), &(0, Token::Identifier("x".to_string())));
-    assert_eq!(parser.process(tokenize("foobar")).unwrap().front().unwrap(), &(0, Token::Identifier("foobar".to_string())));
+    assert_eq!(parser.process(tokenize("x")).unwrap().first().unwrap(), &(0, Token::Identifier("x".to_string())));
+    assert_eq!(parser.process(tokenize("foobar")).unwrap().first().unwrap(), &(0, Token::Identifier("foobar".to_string())));
 
     assert_eq!(parser.process(tokenize("2x")).unwrap().len(), 3);
-    assert_eq!(parser.process(tokenize("2x")).unwrap().back().unwrap(), &(0, Token::Operator('*')));
+    assert_eq!(parser.process(tokenize("2x")).unwrap().last().unwrap(), &(0, Token::Operator('*')));
   }
 
   #[test]
@@ -206,15 +206,15 @@ mod tests {
     parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
     parser.register_operator('*', Operator(5, OperatorAssociativity::Left));
 
-    assert_eq!(parser.process(tokenize("2+2*2")).unwrap().back().unwrap(), &(1, Token::Operator('+')));
-    assert_eq!(parser.process(tokenize("(2+2)*2")).unwrap().back().unwrap(), &(5, Token::Operator('*')));
+    assert_eq!(parser.process(tokenize("2+2*2")).unwrap().last().unwrap(), &(1, Token::Operator('+')));
+    assert_eq!(parser.process(tokenize("(2+2)*2")).unwrap().last().unwrap(), &(5, Token::Operator('*')));
 
-    assert_eq!(parser.process(tokenize("2(14+2)")).unwrap().back().unwrap(), &(0, Token::Operator('*')));
+    assert_eq!(parser.process(tokenize("2(14+2)")).unwrap().last().unwrap(), &(0, Token::Operator('*')));
 
-    assert_eq!(parser.process(tokenize("(((2)))")).unwrap().front().unwrap(), &(3, Token::Number(2.0)));
+    assert_eq!(parser.process(tokenize("(((2)))")).unwrap().first().unwrap(), &(3, Token::Number(2.0)));
     println!("{:?}", tokenize("(((2))+2)"));
     println!("{:?}", parser.process(tokenize("(((2))+2)")));
-    assert_eq!(parser.process(tokenize("(((2))+2)")).unwrap().back().unwrap(), &(6, Token::Operator('+')));
+    assert_eq!(parser.process(tokenize("(((2))+2)")).unwrap().last().unwrap(), &(6, Token::Operator('+')));
   }
 
   #[test]
@@ -253,7 +253,7 @@ mod tests {
     assert_eq!(parser.process(tokenize("foo()")).unwrap().len(), 1);
     assert_eq!(parser.process(tokenize("foo(1)")).unwrap().len(), 2);
     assert_eq!(parser.process(tokenize("foo(1, 2)")).unwrap().len(), 3);
-    assert_eq!(parser.process(tokenize("foo(1, 2)")).unwrap().back().unwrap(), &(0, Token::Identifier("foo".to_string())));
-    assert_eq!(parser.process(tokenize("foo(-1, 2)")).unwrap().front().unwrap(), &(4, Token::Number(-1.0)));
+    assert_eq!(parser.process(tokenize("foo(1, 2)")).unwrap().last().unwrap(), &(0, Token::Identifier("foo".to_string())));
+    assert_eq!(parser.process(tokenize("foo(-1, 2)")).unwrap().first().unwrap(), &(4, Token::Number(-1.0)));
   }
 }

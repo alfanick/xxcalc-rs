@@ -54,10 +54,10 @@ impl Default for Evaluator {
 }
 
 impl TokensReducer for Evaluator {
-  fn process(&self, mut tokens: TokenList) -> Result<Polynomial, EvaluationError> {
-    let mut stack: Vec<Polynomial> = Vec::with_capacity(tokens.len());
+  fn process(&self, tokens: TokenList) -> Result<Polynomial, EvaluationError> {
+    let mut stack: Vec<Polynomial> = Vec::with_capacity(10);
 
-    while let Some((position, token)) = tokens.pop_front() {
+    for (position, token) in tokens {
       match token {
         Token::Number(x) => stack.push(Polynomial::constant(x)),
         Token::Operator(x) => {
