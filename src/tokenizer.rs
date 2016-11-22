@@ -14,6 +14,7 @@ pub enum Token {
   Unknown
 }
 
+#[inline]
 pub fn tokenize(line: &str) -> TokenList {
   Tokenizer::default().process(line)
 }
@@ -40,6 +41,7 @@ enum State {
 }
 
 impl Default for Tokenizer {
+  #[inline]
   fn default() -> Tokenizer {
     Tokenizer {
       tokens: TokenList::new(),
@@ -143,6 +145,7 @@ impl StringProcessor for Tokenizer {
 }
 
 impl Tokenizer {
+  #[inline(always)]
   fn push_number_or_identifier(&mut self, position: Option<usize>) {
     if position.is_some() {
       if self.state == State::Front || self.state == State::General || self.state == State::Operator {
@@ -171,6 +174,7 @@ impl Tokenizer {
     }
   }
 
+  #[inline(always)]
   fn implicit_multiplication(&mut self, position: usize, character: char) {
     if character == '(' || character.is_alphabetic() {
       if self.previous_state == State::NumberSign ||

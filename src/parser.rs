@@ -132,6 +132,7 @@ impl Parser {
     self.operators.insert(name, operator)
   }
 
+  #[inline(always)]
   fn lower_precedence(&self, a: &Token, b: &Token) -> bool {
     let &Operator(a_prec, ref a_assoc) = match *a {
       Token::Operator(name) => self.operators.get(&name).unwrap(),

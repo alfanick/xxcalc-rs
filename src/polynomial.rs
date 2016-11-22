@@ -4,20 +4,24 @@ pub struct Polynomial {
 }
 
 impl Polynomial {
+  #[inline(always)]
   pub fn new(c: &[f64]) -> Polynomial {
     Polynomial {
       coefficients: c.to_vec()
     }
   }
 
+  #[inline(always)]
   pub fn linear(b: f64, a: f64) -> Polynomial {
     Polynomial::new(&[b, a])
   }
 
+  #[inline(always)]
   pub fn constant(b: f64) -> Polynomial {
     Polynomial::new(&[b])
   }
 
+  #[inline(always)]
   pub fn zero() -> Polynomial {
     Polynomial::constant(0.0)
   }
@@ -78,6 +82,7 @@ impl Polynomial {
 }
 
 impl Default for Polynomial {
+  #[inline(always)]
   fn default() -> Polynomial {
     Polynomial::zero()
   }

@@ -93,6 +93,7 @@ impl Evaluator {
     }
   }
 
+  #[inline(always)]
   fn call_function(&self, name: &String, position: usize, stack: &mut Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     if let Some(function) = self.functions.get(name) {
       if stack.len() < function.arity {
