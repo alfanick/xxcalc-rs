@@ -6,24 +6,22 @@ pub struct Polynomial {
 impl Polynomial {
   #[inline(always)]
   pub fn new(c: &[f64]) -> Polynomial {
-    Polynomial {
-      coefficients: c.to_vec()
-    }
+    Polynomial { coefficients: c.to_vec() }
   }
 
   #[inline(always)]
   pub fn linear(b: f64, a: f64) -> Polynomial {
-    Polynomial::new(&[b, a])
+    Polynomial { coefficients: vec![b, a] }
   }
 
   #[inline(always)]
   pub fn constant(b: f64) -> Polynomial {
-    Polynomial::new(&[b])
+    Polynomial { coefficients: vec![b] }
   }
 
   #[inline(always)]
   pub fn zero() -> Polynomial {
-    Polynomial::constant(0.0)
+    Polynomial { coefficients: vec![0.0] }
   }
 
   pub fn degree(&self) -> usize {
