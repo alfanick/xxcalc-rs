@@ -3,7 +3,7 @@ pub struct Tokens(pub TokenList, pub Identifiers);
 pub type TokenList = Vec<(usize, Token)>;
 pub type Identifiers = Vec<String>;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
@@ -26,7 +26,7 @@ pub struct Tokenizer {
   state: State,
   previous_state: State,
 
-  lookup: HashMap<String, usize>
+  lookup: BTreeMap<String, usize>
 }
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -49,7 +49,7 @@ impl Default for Tokenizer {
       value: String::with_capacity(10),
       state: State::Front,
       previous_state: State::General,
-      lookup: HashMap::new()
+      lookup: BTreeMap::new()
     }
   }
 }
