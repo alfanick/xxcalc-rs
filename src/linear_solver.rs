@@ -1,7 +1,7 @@
 use calculator::*;
 use evaluator::*;
 use parser::*;
-use tokenizer::{TokenList, Tokenizer};
+use tokenizer::{Tokenizer, Tokens};
 use polynomial_calculator::{PolynomialParser, PolynomialEvaluator};
 use polynomial::Polynomial;
 
@@ -36,7 +36,7 @@ impl Default for LinearSolverEvaluator {
 }
 
 impl TokensReducer for LinearSolverEvaluator {
-  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
@@ -60,7 +60,7 @@ impl Default for LinearSolverParser {
 }
 
 impl TokensProcessor for LinearSolverParser {
-  fn process(&mut self, tokens: &TokenList) -> Result<&TokenList, ParsingError> {
+  fn process(&mut self, tokens: &Tokens) -> Result<&Tokens, ParsingError> {
     self.parser.process(tokens)
   }
 }

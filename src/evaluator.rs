@@ -1,5 +1,5 @@
 use polynomial::{Polynomial, PolynomialError};
-use tokenizer::{TokenList, Token};
+use tokenizer::{Token, Tokens};
 use std::collections::BTreeMap;
 use linear_solver::SolvingError;
 
@@ -17,7 +17,7 @@ pub enum EvaluationError {
 }
 
 pub trait TokensReducer {
-  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError>;
+  fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError>;
 }
 
 pub type FunctionHandle = Box<Fn(Vec<Polynomial>) -> Result<Polynomial, EvaluationError>>;
@@ -54,8 +54,9 @@ impl Default for Evaluator {
 }
 
 impl TokensReducer for Evaluator {
-  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens_with_identifiers: &Tokens) -> Result<Polynomial, EvaluationError> {
     let mut stack: Vec<Polynomial> = Vec::with_capacity(10);
+    let &Tokens(ref tokens, ref identifiers) = tokens_with_identifiers;
 
     for &(position, ref token) in tokens {
       match *token {
@@ -64,7 +65,9 @@ impl TokensReducer for Evaluator {
           let result = try!(self.call_function(&x.to_string(), position, &mut stack));
           stack.push(result);
         },
-        Token::Identifier(ref x) => {
+        Token::Identifier(idx) => {
+          let x = identifiers.get(idx).unwrap();
+
           if let Some(constant) = self.constants.get(x) {
             stack.push(constant.clone());
             continue;

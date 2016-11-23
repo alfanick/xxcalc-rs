@@ -1,5 +1,5 @@
 use calculator::*;
-use tokenizer::{TokenList, Tokenizer};
+use tokenizer::{Tokenizer, Tokens};
 use evaluator::{Evaluator, EvaluationError, TokensReducer, Function};
 use parser::{Parser, ParsingError, Operator, OperatorAssociativity, TokensProcessor};
 use polynomial::Polynomial;
@@ -42,7 +42,7 @@ impl Default for PolynomialEvaluator {
 }
 
 impl TokensReducer for PolynomialEvaluator {
-  fn process(&self, tokens: &TokenList) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
@@ -68,7 +68,7 @@ impl Default for PolynomialParser {
 }
 
 impl TokensProcessor for PolynomialParser {
-  fn process(&mut self, tokens: &TokenList) -> Result<&TokenList, ParsingError> {
+  fn process(&mut self, tokens: &Tokens) -> Result<&Tokens, ParsingError> {
     self.parser.process(tokens)
   }
 }
