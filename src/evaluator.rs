@@ -295,7 +295,7 @@ mod benchmarks {
 
   #[bench]
   #[ignore]
-  fn bench_evaluation(b: &mut Bencher) {
+  fn bench_evaluation_cloning(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
     let mut tokenizer = Tokenizer::default();
     let tokens = tokenizer.process(add_sub_r);
@@ -319,7 +319,7 @@ mod benchmarks {
 
   #[bench]
   #[ignore]
-  fn bench_evaluation_inplace(b: &mut Bencher) {
+  fn bench_evaluation(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
     let mut tokenizer = Tokenizer::default();
     let tokens = tokenizer.process(add_sub_r);
