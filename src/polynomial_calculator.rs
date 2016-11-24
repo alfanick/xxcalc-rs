@@ -1,7 +1,8 @@
+use super::*;
 use calculator::*;
-use tokenizer::{Tokenizer, Tokens};
-use evaluator::{Evaluator, EvaluationError, TokensReducer, Function};
-use parser::{Parser, ParsingError, Operator, OperatorAssociativity, TokensProcessor};
+use tokenizer::Tokenizer;
+use evaluator::{Evaluator, Function};
+use parser::{Parser, Operator, OperatorAssociativity};
 use polynomial::Polynomial;
 use std::f64::consts::{PI, E};
 
@@ -75,7 +76,7 @@ impl TokensProcessor for PolynomialParser {
 
 pub mod functions {
   use polynomial::Polynomial;
-  use evaluator::EvaluationError;
+  use EvaluationError;
 
   pub fn addition(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let b = args.pop().unwrap();
@@ -216,10 +217,11 @@ mod tests {
 #[cfg(test)]
 mod benchmarks {
   use super::*;
+  use TokensReducer;
+  use TokensProcessor;
+  use StringProcessor;
   use calculator::Calculator;
-  use tokenizer::{StringProcessor, Tokenizer};
-  use parser::TokensProcessor;
-  use evaluator::TokensReducer;
+  use tokenizer::Tokenizer;
   use tokenizer::benchmarks::add_sub_gen;
   use test::Bencher;
 

@@ -1,7 +1,8 @@
-use calculator::*;
-use evaluator::*;
-use parser::*;
-use tokenizer::{Tokenizer, Tokens};
+use super::*;
+use calculator::Calculator;
+use evaluator::{Evaluator, Function};
+use parser::{Parser, Operator, OperatorAssociativity};
+use tokenizer::Tokenizer;
 use polynomial_calculator::{PolynomialParser, PolynomialEvaluator};
 use polynomial::Polynomial;
 
@@ -66,8 +67,8 @@ impl TokensProcessor for LinearSolverParser {
 }
 mod functions {
   use super::*;
-  use evaluator::EvaluationError;
   use polynomial::Polynomial;
+  use EvaluationError;
 
   pub fn solver(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let mut right = args.pop().unwrap();
@@ -108,9 +109,9 @@ mod functions {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use EvaluationError;
   use polynomial::Polynomial;
   use calculator::{Calculator, CalculationError};
-  use evaluator::EvaluationError;
 
   #[test]
   fn test_general() {

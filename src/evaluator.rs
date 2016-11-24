@@ -1,24 +1,6 @@
+use super::*;
 use polynomial::{Polynomial, PolynomialError};
-use tokenizer::{Token, Tokens};
 use std::collections::BTreeMap;
-use linear_solver::SolvingError;
-
-
-#[derive(Debug, PartialEq)]
-pub enum EvaluationError {
-  UnknownSymbol(String, usize),
-  ArgumentMissing(String, usize, usize),
-  MultipleExpressions,
-  ConflictingName(String),
-  PolynomialError(PolynomialError),
-  SolvingError(SolvingError),
-  NonConstantExponent,
-  NonNaturalExponent
-}
-
-pub trait TokensReducer {
-  fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError>;
-}
 
 pub type FunctionHandle = Box<Fn(Vec<Polynomial>) -> Result<Polynomial, EvaluationError>>;
 
@@ -54,11 +36,10 @@ impl Default for Evaluator {
 }
 
 impl TokensReducer for Evaluator {
-  fn process(&self, tokens_with_identifiers: &Tokens) -> Result<Polynomial, EvaluationError> {
+  fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     let mut stack: Vec<Polynomial> = Vec::with_capacity(10);
-    let &Tokens(ref tokens, ref identifiers) = tokens_with_identifiers;
 
-    for &(position, ref token) in tokens {
+    for &(position, ref token) in &tokens.tokens {
       match *token {
         Token::Number(x) => stack.push(Polynomial::constant(x)),
         Token::Operator(x) => {
@@ -66,7 +47,7 @@ impl TokensReducer for Evaluator {
           stack.push(result);
         },
         Token::Identifier(idx) => {
-          let x = identifiers.get(idx).unwrap();
+          let x = tokens.identifiers.get(idx).unwrap();
 
           if let Some(constant) = self.constants.get(x) {
             stack.push(constant.clone());
@@ -132,8 +113,12 @@ impl Evaluator {
 #[cfg(test)]
 #[allow(unused_must_use)]
 mod tests {
-  use evaluator::*;
-  use parser::*;
+  use TokensReducer;
+  use TokensProcessor;
+  use StringProcessor;
+  use EvaluationError;
+  use evaluator::{Evaluator, Function};
+  use parser::{Parser, Operator, OperatorAssociativity};
   use tokenizer::*;
   use polynomial::*;
 
@@ -286,8 +271,11 @@ mod tests {
 #[cfg(test)]
 mod benchmarks {
   use super::*;
-  use parser::*;
-  use tokenizer::*;
+  use TokensReducer;
+  use TokensProcessor;
+  use StringProcessor;
+  use parser::{Parser, Operator, OperatorAssociativity};
+  use tokenizer::{Tokenizer};
   use tokenizer::benchmarks::add_sub_gen;
   use test::Bencher;
   use polynomial_calculator::functions::{addition, subtraction};

@@ -1,6 +1,4 @@
-use tokenizer::StringProcessor;
-use parser::{TokensProcessor, ParsingError};
-use evaluator::{TokensReducer, EvaluationError};
+use super::*;
 use polynomial::Polynomial;
 
 #[derive(Debug, PartialEq)]

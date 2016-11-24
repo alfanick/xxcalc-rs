@@ -1,7 +1,6 @@
 extern crate xxcalc;
-use xxcalc::tokenizer::{StringProcessor, Tokenizer};
-use xxcalc::parser::TokensProcessor;
-use xxcalc::evaluator::TokensReducer;
+use xxcalc::{StringProcessor, TokensProcessor, TokensReducer};
+use xxcalc::tokenizer::Tokenizer;
 use xxcalc::linear_solver::{LinearSolverParser, LinearSolverEvaluator};
 
 extern crate rustyline;
