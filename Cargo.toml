@@ -3,6 +3,10 @@ name = "xxcalc"
 version = "0.1.0"
 authors = ["Amadeusz Juskowiak <amadeusz@amanointeractive.com>"]
 
+[[bin]]
+name = "xxcalc"
+doc = false
+
 [dependencies]
 rustyline = "1.0.0"
 
