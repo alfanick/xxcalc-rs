@@ -321,6 +321,28 @@ impl IndexMut<usize> for Polynomial {
   }
 }
 
+/// Performs polynomial addition in-place.
+///
+/// This addition operator requires first operand to be a mutable
+/// reference (which is returned back), the other operand is
+/// immutable. No other new instance of Polynomial is created
+/// when this operation is executed.
+///
+/// Polynomial addition is a linear time operation, it is
+/// a simple vector addition, as one needs to add coefficients
+/// of appropriate terms.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = &mut Polynomial::constant(1.0);
+/// let b = &Polynomial::linear(1.0, 1.0);
+///
+/// let c = a + b;
+///
+/// assert_eq!(*c, Polynomial::linear(2.0, 1.0));
+/// ```
 impl<'a, 'b> Add<&'b Polynomial> for &'a mut Polynomial {
   type Output = &'a Polynomial;
 
@@ -337,12 +359,42 @@ impl<'a, 'b> Add<&'b Polynomial> for &'a mut Polynomial {
   }
 }
 
+/// Implementation of assign with addition `+=` operator.
+///
+/// Internally it just uses addition operator on mutable reference.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut a = Polynomial::constant(1.0);
+/// let b = Polynomial::linear(1.0, 1.0);
+///
+/// a += b;
+///
+/// assert_eq!(a, Polynomial::linear(2.0, 1.0));
+/// ```
 impl AddAssign for Polynomial {
   fn add_assign(&mut self, other: Polynomial) {
     self + &other;
   }
 }
 
+/// Implementation of addition operator for polynomials. A new
+/// instance of Polynomial is created.
+///
+/// Internally first operand is cloned, than assign with addition
+/// is used and the modified operand is returned as a result.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = Polynomial::constant(1.0);
+/// let b = Polynomial::linear(1.0, 1.0);
+///
+/// assert_eq!(a+b, Polynomial::linear(2.0, 1.0));
+/// ```
 impl Add for Polynomial {
   type Output = Polynomial;
 
@@ -353,6 +405,28 @@ impl Add for Polynomial {
   }
 }
 
+/// Performs polynomial subtraction in-place.
+///
+/// This subtraction operator requires first operand to be a mutable
+/// reference (which is returned back), the other operand is
+/// immutable. No other new instance of Polynomial is created
+/// when this operation is executed.
+///
+/// Polynomial subtraction is a linear time operation, it is
+/// a simple vector addition, as one needs to subtract coefficients
+/// of appropriate terms.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = &mut Polynomial::constant(1.0);
+/// let b = &Polynomial::linear(1.0, 1.0);
+///
+/// let c = a - b;
+///
+/// assert_eq!(*c, Polynomial::linear(0.0, -1.0));
+/// ```
 impl<'a, 'b> Sub<&'b Polynomial> for &'a mut Polynomial {
   type Output = &'a Polynomial;
 
@@ -369,12 +443,42 @@ impl<'a, 'b> Sub<&'b Polynomial> for &'a mut Polynomial {
   }
 }
 
+/// Implementation of assign with subtraction `-=` operator.
+///
+/// Internally it just uses subtraction operator on mutable reference.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut a = Polynomial::constant(1.0);
+/// let b = Polynomial::linear(1.0, 1.0);
+///
+/// a -= b;
+///
+/// assert_eq!(a, Polynomial::linear(0.0, -1.0));
+/// ```
 impl SubAssign for Polynomial {
   fn sub_assign(&mut self, other: Polynomial) {
     self - &other;
   }
 }
 
+/// Implementation of subtraction operator for polynomials. A new
+/// instance of Polynomial is created.
+///
+/// Internally first operand is cloned, than assign with subtraction
+/// is used and the modified operand is returned as a result.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = Polynomial::constant(1.0);
+/// let b = Polynomial::linear(1.0, 1.0);
+///
+/// assert_eq!(a-b, Polynomial::linear(0.0, -1.0));
+/// ```
 impl Sub for Polynomial {
   type Output = Polynomial;
 
@@ -385,6 +489,29 @@ impl Sub for Polynomial {
   }
 }
 
+/// Performs polynomial multiplication without creating new
+/// Polynomial.
+///
+/// This multiplication operator requires first operand to be
+/// a mutable reference (which is returned back), the other
+/// operand is immutable. No other new instance of Polynomial
+/// is created when this operation is executed.
+///
+/// Polynomial multiplication is implemented as O(n*m) operation,
+/// which results in polynomial of degree n+m. Internally an
+/// appropriatly sized temporary vector is used.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = &mut Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = &Polynomial::linear(1.0, 2.0);
+///
+/// let c = a * b;
+///
+/// assert_eq!(*c, Polynomial::new(&[0.0, 2.0, 5.0, 2.0]));
+/// ```
 impl<'a, 'b> Mul<&'b Polynomial> for &'a mut Polynomial {
   type Output = &'a Polynomial;
 
