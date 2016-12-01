@@ -45,6 +45,7 @@ pub trait TokensReducer {
 use std::ops::Index;
 use std::collections::BTreeMap;
 
+#[derive(Debug)]
 pub struct Tokens {
   pub tokens: TokenList,
   pub identifiers: Identifiers,

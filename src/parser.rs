@@ -148,6 +148,7 @@ mod tests {
   use TokensProcessor;
   use StringProcessor;
   use Token;
+  use ParsingError;
   use parser::*;
   use tokenizer::*;
 
@@ -216,17 +217,17 @@ mod tests {
     parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
     parser.register_operator('*', Operator(5, OperatorAssociativity::Left));
 
-    // assert_eq!(parser.process(tokenize_ref!("2+(2(2+2)")), Err(ParsingError::MissingBracket(2)));
-    // assert_eq!(parser.process(tokenize_ref!("(2(2+2)")), Err(ParsingError::MissingBracket(0)));
-    // assert_eq!(parser.process(tokenize_ref!("2(2+2))")), Err(ParsingError::MissingBracket(6)));
+    assert_eq!(parser.process(tokenize_ref!("2+(2(2+2)")).unwrap_err(), ParsingError::MissingBracket(2));
+    assert_eq!(parser.process(tokenize_ref!("(2(2+2)")).unwrap_err(), ParsingError::MissingBracket(0));
+    assert_eq!(parser.process(tokenize_ref!("2(2+2))")).unwrap_err(), ParsingError::MissingBracket(6));
   }
 
   #[test]
   fn test_empty_expression() {
     let mut parser = Parser::new();
 
-    // assert_eq!(parser.process(tokenize_ref!("")), Err(ParsingError::EmptyExpression));
-    // assert_eq!(parser.process(tokenize_ref!("((()))")), Err(ParsingError::EmptyExpression));
+    assert_eq!(parser.process(tokenize_ref!("")).unwrap_err(), ParsingError::EmptyExpression);
+    assert_eq!(parser.process(tokenize_ref!("((()))")).unwrap_err(), ParsingError::EmptyExpression);
   }
 
   #[test]
@@ -235,8 +236,8 @@ mod tests {
     parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
     parser.register_operator('*', Operator(5, OperatorAssociativity::Left));
 
-    // assert_eq!(parser.process(tokenize_ref!("@2")), Err(ParsingError::UnknownToken(0)));
-    // assert_eq!(parser.process(tokenize_ref!("2+2*{2+2}")), Err(ParsingError::UnknownToken(4)));
+    assert_eq!(parser.process(tokenize_ref!("@2")).unwrap_err(), ParsingError::UnknownToken(0));
+    assert_eq!(parser.process(tokenize_ref!("2+2*{2+2}")).unwrap_err(), ParsingError::UnknownToken(4));
   }
 
   #[test]
