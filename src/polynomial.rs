@@ -3,7 +3,7 @@
 /// A polynomial is defined by real values of its coefficients corresponding
 /// to natural-numbered powers of the polynomial x. As coefficients are represented
 /// as continous vector, storing polynomials of high degree, but with most
-/// terms empty is quite expensive (`x^1024` makes vector of size 1024).
+/// terms empty is quite expensive (`x^1023` makes vector of size 1024).
 ///
 /// As one can imagine `x^3.14` is not a polynomial, while `3.14x^2+2` is a
 /// polynomial.
@@ -11,8 +11,7 @@
 /// # Examples
 ///
 /// ```
-/// use xxcalc::polynomial::Polynomial;
-///
+/// # use xxcalc::polynomial::Polynomial;
 /// assert_eq!(String::from(Polynomial::new(&[1.0])), "1");
 /// assert_eq!(String::from(Polynomial::new(&[0.0, 1.0])), "x");
 /// assert_eq!(String::from(Polynomial::new(&[2.0, 0.0, 3.14])), "3.14x^2+2");
@@ -29,8 +28,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::new(&[1.0, 2.0, 3.0])[0], 1.0);
   /// assert_eq!(Polynomial::new(&[1.0, 2.0, 3.0])[2], 3.0);
   /// ```
@@ -45,8 +43,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::linear(1.0, 0.0), Polynomial::new(&[1.0, 0.0]));
   /// assert_eq!(Polynomial::linear(0.0, 1.0), Polynomial::new(&[0.0, 1.0]));
   /// ```
@@ -61,8 +58,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::constant(0.0), Polynomial::new(&[0.0]));
   /// assert_eq!(Polynomial::constant(3.14), Polynomial::new(&[3.14]));
   /// ```
@@ -78,8 +74,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::zero(), Polynomial::constant(0.0));
   /// assert_eq!(Polynomial::zero().degree(), 0);
   /// ```
@@ -99,8 +94,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::zero().degree(), 0);
   /// assert_eq!(Polynomial::constant(0.0).degree(), 0);
   /// assert_eq!(Polynomial::linear(1.0, 0.0).degree(), 0);
@@ -123,8 +117,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::constant(3.0).bind(9.0), Polynomial::constant(3.0));
   /// assert_eq!(Polynomial::linear(0.0, 1.0).bind(2.0), Polynomial::constant(2.0));
   /// assert_eq!(Polynomial::linear(1.0, 4.0).bind(2.0), Polynomial::constant(9.0));
@@ -156,9 +149,8 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  /// use xxcalc::polynomial::PolynomialError;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
+  /// # use xxcalc::polynomial::PolynomialError;
   /// assert_eq!(Polynomial::constant(3.0).as_f64(), Ok(3.0));
   /// assert_eq!(Polynomial::zero().as_f64(), Ok(0.0));
   /// assert_eq!(Polynomial::linear(1.0, 0.0).as_f64(), Ok(1.0));
@@ -183,8 +175,7 @@ impl Polynomial {
   /// # Examples
   ///
   /// ```
-  /// use xxcalc::polynomial::Polynomial;
-  ///
+  /// # use xxcalc::polynomial::Polynomial;
   /// assert_eq!(Polynomial::new(&[0.0, 2.0]).as_string("x"), "2x");
   /// assert_eq!(Polynomial::new(&[-1.0, 2.0]).as_string("x"), "2x-1");
   /// assert_eq!(Polynomial::new(&[-1.0, 2.0, 4.0]).as_string("x"), "4x^2+2x-1");
@@ -227,8 +218,7 @@ impl Polynomial {
 /// # Examples
 ///
 /// ```
-/// use xxcalc::polynomial::Polynomial;
-///
+/// # use xxcalc::polynomial::Polynomial;
 /// assert_eq!(Polynomial::default(), Polynomial::zero());
 /// ```
 impl Default for Polynomial {
@@ -244,8 +234,7 @@ impl Default for Polynomial {
 /// # Examples
 ///
 /// ```
-/// use xxcalc::polynomial::Polynomial;
-///
+/// # use xxcalc::polynomial::Polynomial;
 /// assert_eq!(String::from(Polynomial::linear(1.0, 2.0)), "2x+1");
 /// ```
 impl From<Polynomial> for String {
@@ -260,10 +249,10 @@ use std::fmt;
 ///
 /// # Examples
 ///
-/// ```
-/// use xxcalc::polynomial::Polynomial;
+/// Prints `expr: 2x+1`:
 ///
-/// // prints expr: 2x+1
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
 /// println!("expr: {}", Polynomial::linear(1.0, 2.0));
 /// ```
 impl fmt::Display for Polynomial {
@@ -274,6 +263,21 @@ impl fmt::Display for Polynomial {
 
 use std::ops::*;
 
+/// Implements index operator for accessing coefficients.
+///
+/// An index may be interpreted as related exponent.
+///
+/// # Panics
+///
+/// Panics when index is greater than number of coefficients.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// assert_eq!(Polynomial::new(&[1.0, 2.0, 3.0])[1], 2.0);
+/// assert_eq!(Polynomial::linear(1.0, 2.0)[1], 2.0);
+/// ```
 impl Index<usize> for Polynomial {
   type Output = f64;
 
@@ -282,6 +286,31 @@ impl Index<usize> for Polynomial {
   }
 }
 
+/// Implements mutable index operator for accessing and
+/// modifying coefficients.
+///
+/// An index may be interpreted as related exponent. If index
+/// is greater than current number of coefficients, new coefficients
+/// are added with default value of zero (so these uninitialiazed
+/// terms have no effect on value or degree of the polynomial).
+///
+/// # Panics
+///
+/// May panic when coefficients cannot be resized (as in lack of memory).
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut p = Polynomial::zero();
+///
+/// p[0] = 2.0;
+/// assert_eq!(p[0], 2.0);
+/// p[123] = 4.0;
+/// assert_eq!(p[122], 0.0);
+/// assert_eq!(p[123], 4.0);
+/// assert_eq!(p.degree(), 123);
+/// ```
 impl IndexMut<usize> for Polynomial {
   fn index_mut(&mut self, idx: usize) -> &mut f64 {
     if idx >= self.coefficients.len() {
@@ -419,18 +448,18 @@ impl MulAssign<f64> for Polynomial {
 }
 
 impl<'a, 'b> Div<&'b Polynomial> for &'a mut Polynomial {
-  type Output = &'a Polynomial;
+  type Output = Result<&'a Polynomial, PolynomialError>;
 
-  fn div(self, other: &'b Polynomial) -> &'a Polynomial {
+  fn div(self, other: &'b Polynomial) -> Result<&'a Polynomial, PolynomialError> {
     let mut self_degree = self.degree();
     let other_degree = other.degree();
 
     if self_degree < other_degree {
-      panic!("Cannot perform polynomial division - divident is of smaller degree than divisor");
+      return Err(PolynomialError::DividentDegreeMismatch);
     } else
     if other_degree == 0 {
       if other.coefficients[0] == 0.0 && self_degree > 0 {
-        panic!("Cannot perform polynomial division - divisor is zero");
+        return Err(PolynomialError::DivisionByZero);
       }
 
       for idx in 0..self_degree+1 {
@@ -456,13 +485,13 @@ impl<'a, 'b> Div<&'b Polynomial> for &'a mut Polynomial {
       self.coefficients = q.coefficients;
     }
 
-    self
+    Ok(self)
   }
 }
 
 impl DivAssign for Polynomial {
   fn div_assign(&mut self, other: Polynomial) {
-    self / &other;
+    let _ = (self / &other).unwrap();
   }
 }
 
@@ -494,7 +523,9 @@ impl Eq for Polynomial { }
 
 #[derive(Debug, PartialEq)]
 pub enum PolynomialError {
-  NonConstantError
+  NonConstantError,
+  DivisionByZero,
+  DividentDegreeMismatch
 }
 
 #[cfg(test)]

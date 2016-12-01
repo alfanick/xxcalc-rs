@@ -106,8 +106,10 @@ pub mod functions {
     let b = args.pop().unwrap();
     let mut a = args.pop().unwrap();
 
-    a /= b;
-    Ok(a)
+    match (&mut a) / &b {
+      Ok(_) => Ok(a),
+      Err(e) => Err(EvaluationError::PolynomialError(e))
+    }
   }
 
   pub fn log(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
@@ -162,9 +164,11 @@ pub mod functions {
 
 #[cfg(test)]
 mod tests {
-  use polynomial::Polynomial;
+  use polynomial::{Polynomial, PolynomialError};
   use polynomial_calculator::PolynomialCalculator;
+  use EvaluationError;
   use calculator::Calculator;
+  use calculator::CalculationError;
   use std::f64::consts::{PI, E};
 
   #[test]
@@ -208,6 +212,8 @@ mod tests {
     assert_eq!(PolynomialCalculator.process("2x*4x"), Ok(Polynomial::new(&[0.0, 0.0, 8.0])));
     assert_eq!(PolynomialCalculator.process("2x*(4x+1)"), Ok(Polynomial::new(&[0.0, 2.0, 8.0])));
     assert_eq!(PolynomialCalculator.process("2x/x"), Ok(Polynomial::new(&[2.0])));
+    assert_eq!(PolynomialCalculator.process("2x/0"), Err(CalculationError::EvaluationError(EvaluationError::PolynomialError(PolynomialError::DivisionByZero))));
+    assert_eq!(PolynomialCalculator.process("2x/x^2"), Err(CalculationError::EvaluationError(EvaluationError::PolynomialError(PolynomialError::DividentDegreeMismatch))));
     assert_eq!(PolynomialCalculator.process("(x^2-3x-10)/(x+2)"), Ok(Polynomial::new(&[-5.0, 1.0])));
     assert_eq!(PolynomialCalculator.process("x^5"), Ok(Polynomial::new(&[0.0, 0.0, 0.0, 0.0, 0.0, 1.0])));
     assert_eq!(PolynomialCalculator.process("(x+1)^5"), Ok(Polynomial::new(&[1.0, 5.0, 10.0, 10.0, 5.0, 1.0])));
