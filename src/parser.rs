@@ -1,31 +1,187 @@
+//! Parser is a TokensProcessor, it takes Tokens in a classical
+//! infix form and transforms them into Reverse Polish Notation
+//! form for further evaluation.
+
 use super::*;
 use std::collections::BTreeMap;
 
-#[derive(PartialEq)]
+/// Defines operator associativity.
+///
+/// If two operators have the same precedence (priority), the order
+/// of their evaluation is defined by their associativity.
+/// A left-associative operator evaluates a left hand side before evaluating
+/// the right hand side. A right-associative operator evaluates a RHS before
+/// evaluating LHS.
+#[derive(PartialEq, Debug)]
 pub enum OperatorAssociativity {
+  /// Left associativity - `a O b O c` is evaluated as `(a O b) O c`
   Left,
+  /// Right associativity - `a O b O c` is evaluated as `a O (b O c)`
   Right
 }
 
+/// Stores operator precedence and its associativity.
+///
+/// Both features are essential when parsing mathematical expressions.
+/// An operator precedence defines its priority, operators with larger
+/// precedence are evaluated before operators with smaller precedence.
+/// An associativity resolves conflicts when two operators are of the
+/// same precedence - a left-associative operator evaluates LHS before
+/// RHS, while a right-associative operator evalutes RHS before LHS.
+///
+/// Knowledge of these features is required to properly convert infix
+/// form into RPN.
+#[derive(PartialEq, Debug)]
 pub struct Operator(i64, OperatorAssociativity);
 
 impl Operator {
+  /// Creates a new operator with given precedence and associativity.
   pub fn new(p: i64, a: OperatorAssociativity) -> Operator {
     Operator(p, a)
   }
 }
 
+/// Parser takes Tokens in infix form and transforms them into
+/// Reverse Polish Notation. After such transformation tokens
+/// can be processed by TokensReducer.
+///
+/// Parser stores registered operators (with their precedence and
+/// associativity) between multiple executions. Furthermore an
+/// output buffer of Tokens is kept internally, so it can be reused
+/// without allocating new memory from the operating system. If
+/// Parser lives long enough this behaviour can greatly reduce
+/// time wasted on mallocs.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::tokenizer::Tokenizer;
+/// # use xxcalc::parser::{Parser, Operator, OperatorAssociativity};
+/// # use xxcalc::{Token, StringProcessor, TokensProcessor};
+/// let mut tokenizer = Tokenizer::default();
+/// let mut parser = Parser::default();
+///
+/// parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
+///
+/// let tokenized = tokenizer.process("2+2");
+/// let parsed = parser.process(tokenized).unwrap();
+///
+/// assert_eq!(parsed.tokens, [(0, Token::Number(2.0)),
+///                            (2, Token::Number(2.0)),
+///                            (1, Token::Operator('+'))]);
+/// ```
+///
+/// # Extending
+///
+/// One could embed the parser inside another TokensProcessor and initialize
+/// is there with some default operators.
 pub struct Parser {
   operators: BTreeMap<char, Operator>,
   output: Tokens
 }
 
+/// Creates a new default Parser.
+///
+/// Such parser is not ready to parse complex infix notation
+/// by default. No operators are registered by default, one
+/// must define operators with their precedence and associativity
+/// to be able of parsing complex mathematical expressions.
 impl Default for Parser {
   fn default() -> Parser {
     Parser::new()
   }
 }
 
+/// This is a main processing unit in the parser. It takes
+/// a tokens in infix form and converts them to RPN using
+/// Dijsktra's shunting-yard algorithm.
+///
+/// Before processing expressions more complex that trivial
+/// identifiers or numbers, operators must be registered.
+///
+/// This parser supports two argument operators and multiple
+/// argument functions. Function arguments must be declared
+/// between opening and closing bracket tokens, with their
+/// arguments separated using separator token.
+///
+/// A popular Dijsktra's [shunting-yard algorithm] converts
+/// infix to postfix notation (RPN) in a linear time O(n). It
+/// pushes numbers and constants to the output, while using
+/// a stack to store temporary operands until they are needed
+/// to be pushed to the output as some other operator with smaller
+/// precedence is found.
+///
+/// # Errors
+///
+/// An EmptyExpression error is returned when tokens represent
+/// no meaningful expression (no tokens or just brackets).
+///
+/// ```
+/// # use xxcalc::parser::Parser;
+/// # use xxcalc::{Tokens, TokensProcessor, ParsingError};
+/// let mut parser = Parser::default();
+///
+/// let tokenized = &Tokens::new(None);
+/// assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::EmptyExpression);
+/// ```
+///
+/// A MissingBracket error is returned when brackets are unbalanced,
+/// no matter if they were used to mark subexpression or an argument
+/// list.
+///
+/// ```
+/// # use xxcalc::tokenizer::Tokenizer;
+/// # use xxcalc::parser::Parser;
+/// # use xxcalc::{StringProcessor, TokensProcessor, ParsingError};
+/// let mut tokenizer = Tokenizer::default();
+/// let mut parser = Parser::default();
+///
+/// {
+///   let tokenized = tokenizer.process("(2");
+///   assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::MissingBracket(0));
+/// }
+///
+/// {
+///   let tokenized = tokenizer.process("2)");
+///   assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::MissingBracket(1));
+/// }
+///
+/// {
+///   let tokenized = tokenizer.process("foo(2, (2), -1");
+///   assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::MissingBracket(3));
+/// }
+/// ```
+///
+/// An UnexpectedToken error is returned when parser encounters a token
+/// with no meaning to the algorithm (such as Token::Unknown).
+///
+/// ```
+/// # use xxcalc::tokenizer::Tokenizer;
+/// # use xxcalc::parser::Parser;
+/// # use xxcalc::{StringProcessor, TokensProcessor, ParsingError, Token};
+/// let mut tokenizer = Tokenizer::default();
+/// let mut parser = Parser::default();
+///
+/// // note that @ is not a valid operator, so it results in Token::Unknown
+/// let tokenized = tokenizer.process("(2)@2");
+/// assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::UnexpectedToken(Token::Unknown('@'), 3));
+/// ```
+///
+/// An UnknownOperator error is returned when a parser encounters an operator
+/// token, but this operator is not registerd with the parser.
+///
+/// ```
+/// # use xxcalc::tokenizer::Tokenizer;
+/// # use xxcalc::parser::Parser;
+/// # use xxcalc::{StringProcessor, TokensProcessor, ParsingError};
+/// let mut tokenizer = Tokenizer::default();
+/// let mut parser = Parser::default();
+///
+/// let tokenized = tokenizer.process("(2)+2");
+/// assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::UnknownOperator('+', 3));
+/// ```
+///
+/// [shunting-yard algorithm]: https://en.wikipedia.org/wiki/Shunting-yard_algorithm
 impl TokensProcessor for Parser {
   fn process(&mut self, tokens: &Tokens) -> Result<&Tokens, ParsingError> {
     let mut stack = TokenList::with_capacity(4);
@@ -113,6 +269,7 @@ impl TokensProcessor for Parser {
 }
 
 impl Parser {
+  /// Creates an empty Parser with no defined operators.
   pub fn new() -> Parser {
     Parser {
       operators: BTreeMap::new(),
@@ -120,6 +277,32 @@ impl Parser {
     }
   }
 
+  /// Registers operator identified by given name to the parser.
+  ///
+  /// Each operator must be registered and associated with its
+  /// precedence and associative to make parser capable of valid
+  /// RPN transformation. As operators always require two arguments,
+  /// no arity is needed.
+  ///
+  /// If an operator with given name was already registered, it
+  /// previous specification is returned.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use xxcalc::tokenizer::Tokenizer;
+  /// # use xxcalc::parser::{Parser, Operator, OperatorAssociativity};
+  /// # use xxcalc::{Token, StringProcessor, TokensProcessor};
+  /// let mut tokenizer = Tokenizer::default();
+  /// let mut parser = Parser::default();
+  ///
+  /// let r = parser.register_operator('+', Operator::new(42, OperatorAssociativity::Left));
+  /// assert!(r.is_none());
+  ///
+  /// let r = parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
+  /// assert_eq!(r.unwrap(), Operator::new(42, OperatorAssociativity::Left));
+  ///
+  /// ```
   pub fn register_operator(&mut self, name: char, operator: Operator) -> Option<Operator> {
     self.operators.insert(name, operator)
   }
@@ -156,7 +339,7 @@ mod tests {
   fn test_operator_registration() {
     let mut parser = Parser::new();
 
-    // assert_eq!(parser.process(tokenize_ref!("2=2")), Err(ParsingError::UnknownOperator('=', 1)));
+    assert_eq!(parser.process(tokenize_ref!("2=2")).unwrap_err(), ParsingError::UnknownOperator('=', 1));
 
     parser.register_operator('=', Operator(-1, OperatorAssociativity::Left));
 

@@ -1,4 +1,4 @@
-//! Defines Polynomial value with basic operators on it.
+//! Defines Polynomial expression with basic operators on it.
 
 /// Polynomial struct represents a mathematical concept of polynomials.
 ///

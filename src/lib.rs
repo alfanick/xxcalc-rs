@@ -1,3 +1,4 @@
+//! foo bar
 #![feature(test)]
 extern crate test;
 
@@ -73,7 +74,7 @@ pub struct Tokens {
 /// Transforms text expression into list of tokens.
 ///
 /// A StringProcessor can be implemented for a tokenizer (lexer)
-/// which convert some text expression into a list of tokens.
+/// which converts some text expression into a list of tokens.
 pub trait StringProcessor {
   fn process(self: &mut Self, line: &str) -> &Tokens;
 }
