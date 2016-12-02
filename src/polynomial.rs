@@ -539,18 +539,64 @@ impl<'a, 'b> Mul<&'b Polynomial> for &'a mut Polynomial {
   }
 }
 
+/// Implementation of assign with multiplication `*=` operator.
+///
+/// Internally it just uses multiplication operator on mutable reference.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut a = Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = Polynomial::linear(1.0, 2.0);
+///
+/// a *= b;
+///
+/// assert_eq!(a, Polynomial::new(&[0.0, 2.0, 5.0, 2.0]));
+/// ```
 impl MulAssign for Polynomial {
   fn mul_assign(&mut self, other: Polynomial) {
     self * &other;
   }
 }
 
+/// Implementation of assign with multiplication `*=` operator for references.
+///
+/// Internally it just uses multiplication operator on mutable reference (it
+/// is just a syntactic sugar around it).
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut a = &mut Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = &Polynomial::linear(1.0, 2.0);
+///
+/// a *= b;
+///
+/// assert_eq!(*a, Polynomial::new(&[0.0, 2.0, 5.0, 2.0]));
+/// ```
 impl<'a, 'b> MulAssign<&'b Polynomial> for &'a mut Polynomial {
   fn mul_assign(&mut self, other: &'b Polynomial) {
     self.mul(other);
   }
 }
 
+/// Implementation of multiplication operator for polynomials. A new
+/// instance of Polynomial is created.
+///
+/// Internally first operand is cloned, than assign with multiplication
+/// is used and the modified operand is returned as a result.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = Polynomial::linear(1.0, 2.0);
+///
+/// assert_eq!(a*b, Polynomial::new(&[0.0, 2.0, 5.0, 2.0]));
+/// ```
 impl Mul for Polynomial {
   type Output = Polynomial;
 
@@ -561,20 +607,90 @@ impl Mul for Polynomial {
   }
 }
 
+/// Specialization of assign with multiplication `*=` operator for polynomial
+/// and double number.
+///
+/// Internally it just multiplies each of coefficient by given double number.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut a = Polynomial::new(&[0.0, 2.0, 1.0]);
+///
+/// a *= 2.0f64;
+///
+/// assert_eq!(a, Polynomial::new(&[0.0, 4.0, 2.0]));
+/// ```
 impl MulAssign<f64> for Polynomial {
   fn mul_assign(&mut self, other: f64) {
     let self_degree = self.degree();
 
-    if self_degree == 0 {
-      self.coefficients[0] *= other;
-    } else {
-      for idx in 0..self_degree+1 {
-        self.coefficients[idx] *= other;
-      }
+    for idx in 0..self_degree+1 {
+      self.coefficients[idx] *= other;
     }
   }
 }
 
+/// Performs polynomial division without creating new
+/// Polynomial.
+///
+/// This division operator requires first operand to be
+/// a mutable reference (which is returned back), the other
+/// operand is immutable. No other new instance of Polynomial
+/// is created when this operation is executed.
+///
+/// Polynomial division is implemented using long division algorithm,
+/// Internally two temporary polynomials are used. However, if divisior
+/// is a constant, a simple arithmetic division over each coefficient
+/// of divident is used.
+///
+/// # Errors
+///
+/// This division operator does not panic on division by zero, as such
+/// operation is defined on double numbers. However in special cases
+/// some errors may be returned.
+///
+/// However division by zero of non-constant polynomial will result in
+/// DivisionByZero error, as such operation is not defined.
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// # use xxcalc::polynomial::PolynomialError;
+/// let a = &mut Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = &Polynomial::zero();
+///
+/// let c = a / b;
+///
+/// assert_eq!(c.unwrap_err(), PolynomialError::DivisionByZero);
+/// ```
+///
+/// A DividentDegreeMismatch error is returned when divident degree is
+/// smaller than divisor degree, as performing such operation would
+/// result in nonpolynomial result.
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// # use xxcalc::polynomial::PolynomialError;
+/// let a = &mut Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = &Polynomial::new(&[1.0, 2.0, 2.0, 2.0]);
+///
+/// let c = a / b;
+///
+/// assert_eq!(c.unwrap_err(), PolynomialError::DividentDegreeMismatch);
+/// ```
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = &mut Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = &Polynomial::linear(1.0, 2.0);
+///
+/// let c = a / b;
+///
+/// assert_eq!(c, Ok(&Polynomial::new(&[0.75, 0.5])));
+/// ```
 impl<'a, 'b> Div<&'b Polynomial> for &'a mut Polynomial {
   type Output = Result<&'a Polynomial, PolynomialError>;
 
@@ -617,12 +733,54 @@ impl<'a, 'b> Div<&'b Polynomial> for &'a mut Polynomial {
   }
 }
 
+/// Implementation of assign with division `/=` operator.
+///
+/// Internally it just uses division operator on mutable reference.
+///
+/// # Panics
+///
+/// It will panic when divident degree is smaller than divisor degree,
+/// or if divident is a non constant polynomial and divisor is zero.
+/// Internally result of division in unwrap, which may cause these errors.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let mut a = Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = Polynomial::linear(1.0, 2.0);
+///
+/// a /= b;
+///
+/// assert_eq!(a, Polynomial::new(&[0.75, 0.5]));
+/// ```
 impl DivAssign for Polynomial {
   fn div_assign(&mut self, other: Polynomial) {
     let _ = (self / &other).unwrap();
   }
 }
 
+/// Implementation of division operator for polynomials. A new
+/// instance of Polynomial is created.
+///
+/// Internally first operand is cloned, than assign with division
+/// is used and the modified operand is returned as a result.
+///
+/// # Panics
+///
+/// It will panic when divident degree is smaller than divisor degree,
+/// or if divident is a non constant polynomial and divisor is zero.
+/// Internally result of division in unwrap, which may cause these errors.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// let a = Polynomial::new(&[0.0, 2.0, 1.0]);
+/// let b = Polynomial::linear(1.0, 2.0);
+///
+/// assert_eq!(a/b, Polynomial::new(&[0.75, 0.5]));
+/// ```
 impl Div for Polynomial {
   type Output = Polynomial;
 
