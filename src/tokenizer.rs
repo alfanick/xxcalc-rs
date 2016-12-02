@@ -53,15 +53,30 @@ impl Default for Tokenizer {
 ///
 /// This tokenizer supports floating point numbers in traditional
 /// and scientific notation (as well as shorthand point notation),
-/// text identifiers and operators such as `+`, `-`, `*`, `/', '^'
+/// text identifiers and operators such as `+`, `-`, `*`, `/`, `^`
 /// and `=`. Parentheses `()` and comma `,` are supported too.
 /// Whitespaces are always skipped, not recognized characters
 /// are wrapped into Unknown token.
 ///
 /// Signed numbers are detected when they cannot be mistaken
 /// for operators `+` or `-`. Implicit multiplication before an
-/// identifier or a parantheses is replaced with explicit multiplacation
+/// identifier or a parantheses is replaced with explicit multiplication
 /// with `*` operator.
+///
+/// # Extending
+///
+/// New features can be add to tokenizer by either embedding this
+/// tokenizer into new one and replacing Unknown tokens with some
+/// other tokens or by implementing a TokensProcessor which takes
+/// output of this tokenizer and replaces Unknown tokens or some
+/// combination of tokens with other ones.
+///
+/// # State machine
+///
+/// Complete, hand-designed state machine used by this StringProcessor
+/// can be seen in the image below:
+///
+/// ![Tokenizer State Machine](http://public.amadeusz.me/documents/tokenizer.svg)
 impl StringProcessor for Tokenizer {
   fn process(&mut self, line: &str) -> &Tokens {
     self.tokens.clear();
@@ -119,7 +134,8 @@ impl StringProcessor for Tokenizer {
         },
         '.' if self.state == State::Number ||
                self.state == State::Front ||
-               self.state == State::General => {
+               self.state == State::General ||
+               self.state == State::Operator => {
           self.value.push(character);
           self.state = State::Number;
         },
