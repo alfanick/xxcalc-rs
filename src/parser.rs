@@ -92,7 +92,7 @@ impl TokensProcessor for Parser {
             return Err(ParsingError::MissingBracket(position));
           }
         },
-        _ => return Err(ParsingError::UnknownToken(position))
+        ref token => return Err(ParsingError::UnexpectedToken(token.clone(), position))
       }
     }
 
@@ -236,8 +236,8 @@ mod tests {
     parser.register_operator('+', Operator(1, OperatorAssociativity::Left));
     parser.register_operator('*', Operator(5, OperatorAssociativity::Left));
 
-    assert_eq!(parser.process(tokenize_ref!("@2")).unwrap_err(), ParsingError::UnknownToken(0));
-    assert_eq!(parser.process(tokenize_ref!("2+2*{2+2}")).unwrap_err(), ParsingError::UnknownToken(4));
+    assert_eq!(parser.process(tokenize_ref!("@2")).unwrap_err(), ParsingError::UnexpectedToken(Token::Unknown('@'), 0));
+    assert_eq!(parser.process(tokenize_ref!("2+2*{2+2}")).unwrap_err(), ParsingError::UnexpectedToken(Token::Unknown('{'), 4));
   }
 
   #[test]

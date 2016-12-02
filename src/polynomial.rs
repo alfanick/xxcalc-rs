@@ -499,7 +499,8 @@ impl Sub for Polynomial {
 ///
 /// Polynomial multiplication is implemented as O(n*m) operation,
 /// which results in polynomial of degree n+m. Internally an
-/// appropriatly sized temporary vector is used.
+/// appropriatly sized temporary vector is used. If both polynomials
+/// are degree zero, a simple arithmetic multiplication is used.
 ///
 /// # Examples
 ///

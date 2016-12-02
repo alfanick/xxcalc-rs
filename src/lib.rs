@@ -13,7 +13,7 @@ pub mod linear_solver;
 #[derive(Debug, PartialEq)]
 pub enum ParsingError {
   UnknownOperator(char, usize),
-  UnknownToken(usize),
+  UnexpectedToken(Token, usize),
   MissingBracket(usize),
   EmptyExpression
 }
@@ -64,7 +64,7 @@ pub enum Token {
   Operator(char),
   Identifier(usize),
   Skip,
-  Unknown
+  Unknown(char)
 }
 
 impl Index<usize> for Tokens {

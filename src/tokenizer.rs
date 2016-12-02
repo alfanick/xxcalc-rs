@@ -110,7 +110,7 @@ impl StringProcessor for Tokenizer {
           self.state = State::Front;
         },
         _ => {
-          token = Token::Unknown;
+          token = Token::Unknown(character);
           self.state = State::General;
         }
       }
