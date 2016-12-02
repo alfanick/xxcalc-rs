@@ -1,27 +1,39 @@
+//! Tokenizer is a StringProcessor, it takes string expression
+//! and converts it into Tokens for further processing.
+
 use super::*;
 
+/// Tokenizer performs the very first step of parsing mathematical
+/// expression into Tokens. These tokens can be then processed by
+/// TokensProcessor.
+///
+/// Tokenizer is a state machine, which can be reused multiple
+/// times. Internally it stores a buffer of Tokens, which can
+/// be reused multiple times without requesting new memory from
+/// the operating system. If Tokenizer lives long enough this
+/// behaviour can greatly reduce time wasted on mallocs.
 pub struct Tokenizer {
+  /// Tokens storage (its capacity is stored between runs)
   tokens: Tokens,
 
+  /// Start position of value
   value_position: usize,
+  /// String representation of current value
   value: String,
 
+  /// Current state of tokenizer
   state: State,
+  /// Previous state of tokenizer
   previous_state: State,
 
 }
 
-#[derive(PartialEq, Copy, Clone, Debug)]
-enum State {
-  Front,
-  General,
-  Identifier,
-  NumberSign,
-  Number,
-  NumberExponent,
-  Operator
-}
-
+/// Creates a new default Tokenizer.
+///
+/// Such tokenizer is optimized (but not limited) for
+/// values up to 10 characters and up to 10 tokens.
+/// However these are default space capacities and they
+/// can extend dynamically.
 impl Default for Tokenizer {
   #[inline]
   fn default() -> Tokenizer {
@@ -35,9 +47,23 @@ impl Default for Tokenizer {
   }
 }
 
+/// This is a main processing unit in the tokenizer.
+/// It takes a string expression and creates a list of
+/// tokens representing this string using a state machine.
+///
+/// This tokenizer supports floating point numbers in traditional
+/// and scientific notation (as well as shorthand point notation),
+/// text identifiers and operators such as `+`, `-`, `*`, `/', '^'
+/// and `=`. Parentheses `()` and comma `,` are supported too.
+/// Whitespaces are always skipped, not recognized characters
+/// are wrapped into Unknown token.
+///
+/// Signed numbers are detected when they cannot be mistaken
+/// for operators `+` or `-`. Implicit multiplication before an
+/// identifier or a parantheses is replaced with explicit multiplacation
+/// with `*` operator.
 impl StringProcessor for Tokenizer {
   fn process(&mut self, line: &str) -> &Tokens {
-    // println!("cap: {}", self.tokens.capacity());
     self.tokens.clear();
     self.value_position = 0;
     self.value.clear();
@@ -180,6 +206,17 @@ impl Tokenizer {
       }
     }
   }
+}
+
+#[derive(PartialEq, Copy, Clone, Debug)]
+enum State {
+  Front,
+  General,
+  Identifier,
+  NumberSign,
+  Number,
+  NumberExponent,
+  Operator
 }
 
 macro_rules! tokenize {

@@ -1,3 +1,5 @@
+//! Defines Polynomial value with basic operators on it.
+
 /// Polynomial struct represents a mathematical concept of polynomials.
 ///
 /// A polynomial is defined by real values of its coefficients corresponding
