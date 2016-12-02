@@ -12,6 +12,35 @@ use super::*;
 /// be reused multiple times without requesting new memory from
 /// the operating system. If Tokenizer lives long enough this
 /// behaviour can greatly reduce time wasted on mallocs.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::tokenizer::Tokenizer;
+/// # use xxcalc::{StringProcessor, Token};
+/// let mut tokenizer = Tokenizer::default();
+///
+/// {
+///   let tokens = tokenizer.process("2.0+2");
+///   assert_eq!(tokens[0], (0, Token::Number(2.0)));
+///   assert_eq!(tokens[1], (3, Token::Operator('+')));
+///   assert_eq!(tokens[2], (4, Token::Number(2.0)));
+/// }
+///
+/// {
+///   let tokens = tokenizer.process("x+log10(100)+x");
+///   assert_eq!(tokens[0], (0, Token::Identifier(0)));
+///   assert_eq!(tokens.identifiers[0], "x");
+///   assert_eq!(tokens[1], (1, Token::Operator('+')));
+///   assert_eq!(tokens[2], (2, Token::Identifier(1)));
+///   assert_eq!(tokens.identifiers[1], "log10");
+///   assert_eq!(tokens[3], (7, Token::BracketOpening));
+///   assert_eq!(tokens[4], (8, Token::Number(100.0)));
+///   assert_eq!(tokens[5], (11, Token::BracketClosing));
+///   assert_eq!(tokens[6], (12, Token::Operator('+')));
+///   assert_eq!(tokens[7], (13, Token::Identifier(0)));
+/// }
+/// ```
 pub struct Tokenizer {
   /// Tokens storage (its capacity is stored between runs)
   tokens: Tokens,

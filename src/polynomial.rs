@@ -3,7 +3,7 @@
 /// Polynomial struct represents a mathematical concept of polynomials.
 ///
 /// A polynomial is defined by real values of its coefficients corresponding
-/// to natural-numbered powers of the polynomial x. As coefficients are represented
+/// to natural-numbered powers of the variable x. As coefficients are represented
 /// as continous vector, storing polynomials of high degree, but with most
 /// terms empty is quite expensive (`x^1023` makes vector of size 1024).
 ///
