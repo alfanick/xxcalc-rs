@@ -793,6 +793,18 @@ impl Div for Polynomial {
 
 use std::cmp::{PartialEq, Eq};
 
+/// Checks if two polynomials are equal.
+///
+/// Polynomials must have the same degree and the same
+/// coefficients to be considered equal.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial::Polynomial;
+/// assert!(Polynomial::new(&[1.0, 2.0]) == Polynomial::new(&[1.0, 2.0]));
+/// assert!(Polynomial::new(&[1.0, 2.0]) == Polynomial::new(&[1.0, 2.0, 0.0, 0.0]));
+/// ```
 impl PartialEq for Polynomial {
   fn eq(&self, other: &Polynomial) -> bool {
     let self_degree = self.degree();
@@ -807,10 +819,14 @@ impl PartialEq for Polynomial {
 
 impl Eq for Polynomial { }
 
+/// Error resulting from operations on polynomials
 #[derive(Debug, PartialEq)]
 pub enum PolynomialError {
+  /// Tried to convert non-constant polynomial to float
   NonConstantError,
+  /// Divided non-constant polynomial by zero
   DivisionByZero,
+  /// Divident is of smaller degree than divisor
   DividentDegreeMismatch
 }
 
