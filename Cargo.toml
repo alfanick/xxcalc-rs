@@ -2,6 +2,12 @@
 name = "xxcalc"
 version = "0.1.0"
 authors = ["Amadeusz Juskowiak <amadeusz@amanointeractive.com>"]
+repository = "https://github.com/alfanick/xxcalc-rs.git"
+homepage = "https://github.com/alfanick/xxcalc-rs.git"
+documentation = "https://alfanick.github.io/xxcalc-rs/xxcalc/index.html"
+license = "MIT"
+readme = "README.md"
+description = "Embeddable or standalone robust floating-point polynomial calculator"
 
 [[bin]]
 name = "xxcalc"
