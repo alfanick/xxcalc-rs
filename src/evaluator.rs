@@ -1,15 +1,52 @@
+//! Evaluator is a TokensReducer, it takes token in RPN form
+//! and evaluates its Polynomial value.
+
 use super::*;
 use polynomial::{Polynomial, PolynomialError};
 use std::collections::BTreeMap;
 
+/// Pointer to function processing Polynomial arguments.
+///
+/// Such function takes a defined number of Polynomial
+/// arguments and transform them into a single Polynomial
+/// value. It is used to implement operators and other
+/// functions in the evaluator.
 pub type FunctionHandle = Box<Fn(Vec<Polynomial>) -> Result<Polynomial, EvaluationError>>;
 
+/// Definition of function with its arity.
+///
+/// A function is used to implement operators and other
+/// functions in the evaluator. Each function consist
+/// of FunctionHandle which process arguments into a single
+/// Polynomial value.
+///
+/// A function handle is guaranteed to receive a defined
+/// number of arguments, as this is checked during the
+/// evaluation (there is no need checking arity of arguments
+/// in the handler).
 pub struct Function {
   arity: usize,
   handle: FunctionHandle
 }
 
 impl Function {
+  /// Creates a new function with given arity and handler.
+  ///
+  /// Handler can be a pointer to a closure or a function.
+  /// A function handler is guaranteed to receive required
+  /// number of arguments when called.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use xxcalc::polynomial_calculator::functions;
+  /// # use xxcalc::evaluator::Function;
+  /// # use xxcalc::polynomial::Polynomial;
+  /// let f_a = Function::new(2, Box::new(functions::addition));
+  /// let f_b = Function::new(0, Box::new(|args| {
+  ///   return Ok(Polynomial::constant(42.0));
+  /// }));
+  /// ```
   pub fn new(a: usize, h: FunctionHandle) -> Function {
     Function {
       arity: a,
@@ -18,23 +55,73 @@ impl Function {
   }
 }
 
+/// Evaluator takes Tokens in Reverse Polish Notation and evaluates
+/// them using defined functions and constants into a sngle Polynomial
+/// value.
+///
+/// Evaluator stores registered functions (with their arity) between
+/// multiple executions. There is no difference between an operator
+/// and a function call. Additionaly constants can be registered.
+/// Both identifiers are kept in binary tree, so their retrieval
+/// is relatively quick. Symbols used for functions or constants
+/// must be unique, a function with no arguments can replace a
+/// constant, however its value may change.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::tokenizer::Tokenizer;
+/// # use xxcalc::parser::{Parser, Operator, OperatorAssociativity};
+/// # use xxcalc::evaluator::{Evaluator, Function};
+/// # use xxcalc::polynomial::Polynomial;
+/// # use xxcalc::{StringProcessor, TokensProcessor, TokensReducer};
+/// let mut tokenizer = Tokenizer::default();
+/// let mut parser = Parser::default();
+/// let mut evaluator = Evaluator::default();
+///
+/// parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
+/// evaluator.register_function("+", Function::new(2, Box::new(|args| {
+///   // not a production code, just a sample
+///   Ok(args[0].clone() + args[1].clone())
+/// })));
+///
+/// let parsed = parser.process(tokenizer.process("2+2")).unwrap();
+/// assert_eq!(evaluator.process(parsed), Ok(Polynomial::constant(4.0)));
+/// ```
 pub struct Evaluator {
   functions: BTreeMap<String, Function>,
   constants: BTreeMap<String, Polynomial>
 }
 
-impl From<PolynomialError> for EvaluationError {
-  fn from(e: PolynomialError) -> EvaluationError {
-    EvaluationError::PolynomialError(e)
-  }
-}
-
+/// Creates a new default Evaluator.
+///
+/// Such evaluator is not aware of any functions or constants.
+/// One must define functions before being able to evaluate
+/// operators or other calls.
 impl Default for Evaluator {
   fn default() -> Evaluator {
     Evaluator::new()
   }
 }
 
+/// This is a main processing unit in the evaluator. It takes
+/// tokens in Reverse Polish Notation and evaluates them into
+/// a single Polynomial value.
+///
+/// Before evaluating functions, operators or constants they
+/// must be registered, as evaluator has no knowledge what to
+/// do with the arguments and how to reduce them into a single
+/// value. Operators and functions are actualy the same thing,
+/// except that operators always require two arguments.
+///
+/// A traditional stack based postfix evaluation algorithm is
+/// used (it computes the result in a linear time). Numbers and
+/// constants are put on a stack, until a operator or a function
+/// call is required. Such call takes off appropriate number of
+/// arguments from the stack and calls the function handler
+/// with these arguments. Result of such evaluation is put back
+/// on the stack. In the end last value on the stack is returned
+/// as the result of the evaluation.
 impl TokensReducer for Evaluator {
   fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     let mut stack: Vec<Polynomial> = Vec::with_capacity(10);
@@ -70,6 +157,7 @@ impl TokensReducer for Evaluator {
 }
 
 impl Evaluator {
+  /// Creates an empty Evaluator with no defined symbols.
   pub fn new() -> Evaluator {
     Evaluator {
       functions: BTreeMap::new(),
@@ -107,6 +195,13 @@ impl Evaluator {
     }
 
     Ok(self.constants.insert(name.to_string(), constant))
+  }
+}
+
+/// Encloses PolynomialError into an EvaluationError
+impl From<PolynomialError> for EvaluationError {
+  fn from(e: PolynomialError) -> EvaluationError {
+    EvaluationError::PolynomialError(e)
   }
 }
 
@@ -266,90 +361,4 @@ mod tests {
     assert_eq!(evaluator.process(parser.process(tokenize_ref!("x*x")).unwrap()), Ok(Polynomial::new(&[0.0, 0.0, 1.0])));
     assert_eq!(evaluator.process(parser.process(tokenize_ref!("x+x")).unwrap()), evaluator.process(parser.process(tokenize_ref!("2x")).unwrap()));
   }
-}
-
-#[cfg(test)]
-mod benchmarks {
-  use super::*;
-  use TokensReducer;
-  use TokensProcessor;
-  use StringProcessor;
-  use parser::{Parser, Operator, OperatorAssociativity};
-  use tokenizer::{Tokenizer};
-  use tokenizer::benchmarks::add_sub_gen;
-  use test::Bencher;
-  use polynomial_calculator::functions::{addition, subtraction};
-  use polynomial::Polynomial;
-
-  #[bench]
-  #[ignore]
-  fn bench_evaluation_cloning(b: &mut Bencher) {
-    let add_sub_r = &add_sub_gen(100000);
-    let mut tokenizer = Tokenizer::default();
-    let tokens = tokenizer.process(add_sub_r);
-    let mut parser = Parser::new();
-    let _ = parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
-    let _ = parser.register_operator('-', Operator::new(1, OperatorAssociativity::Left));
-    let parsed_tokens = parser.process(tokens).unwrap();
-    let mut evaluator = Evaluator::new();
-
-    let _ = evaluator.register_function("+", Function::new(2, Box::new(|args| {
-      Ok(args[0].clone() + args[1].clone())
-    })));
-    let _ = evaluator.register_function("-", Function::new(2, Box::new(|args| {
-      Ok(args[0].clone() + args[1].clone())
-    })));
-
-    b.iter(|| {
-      (0..10).fold(0.0, |a, _| a + evaluator.process(parsed_tokens).unwrap()[0])
-    });
-  }
-
-  #[bench]
-  #[ignore]
-  fn bench_evaluation(b: &mut Bencher) {
-    let add_sub_r = &add_sub_gen(100000);
-    let mut tokenizer = Tokenizer::default();
-    let tokens = tokenizer.process(add_sub_r);
-    let mut parser = Parser::new();
-    let _ = parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
-    let _ = parser.register_operator('-', Operator::new(1, OperatorAssociativity::Left));
-    let parsed_tokens = parser.process(tokens).unwrap();
-    let mut evaluator = Evaluator::new();
-
-    let _ = evaluator.register_function("+", Function::new(2, Box::new(addition)));
-    let _ = evaluator.register_function("-", Function::new(2, Box::new(subtraction)));
-
-    b.iter(|| {
-      (0..10).fold(0.0, |a, _| a + evaluator.process(parsed_tokens).unwrap()[0])
-    });
-  }
-
-  #[bench]
-  fn bench_evaluation_numbers(b: &mut Bencher) {
-    let mut tokenizer = Tokenizer::default();
-    let tokens = tokenizer.process("3.14");
-    let mut parser = Parser::new();
-    let parsed_tokens = parser.process(tokens).unwrap();
-    let evaluator = Evaluator::new();
-
-    b.iter(|| {
-      evaluator.process(parsed_tokens).unwrap()
-    });
-  }
-
-  #[bench]
-  fn bench_evaluation_constants(b: &mut Bencher) {
-    let mut tokenizer = Tokenizer::default();
-    let tokens = tokenizer.process("pi");
-    let mut parser = Parser::new();
-    let parsed_tokens = parser.process(tokens).unwrap();
-    let mut evaluator = Evaluator::new();
-    let _ = evaluator.register_constant("pi", Polynomial::constant(3.14));
-
-    b.iter(|| {
-      evaluator.process(parsed_tokens).unwrap()
-    });
-  }
-
 }

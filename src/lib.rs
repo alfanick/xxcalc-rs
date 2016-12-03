@@ -1,7 +1,4 @@
 //! foo bar
-#![feature(test)]
-extern crate test;
-
 pub mod polynomial;
 #[macro_use]
 pub mod tokenizer;
