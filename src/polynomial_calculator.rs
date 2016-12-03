@@ -1,3 +1,6 @@
+//! Defines a PolynomialCalculator with common arithmetic operations, functions
+//! and constants already defined.
+
 use super::*;
 use calculator::*;
 use tokenizer::Tokenizer;
@@ -6,16 +9,48 @@ use parser::{Parser, Operator, OperatorAssociativity};
 use polynomial::Polynomial;
 use std::f64::consts::{PI, E};
 
+/// PolynomialCalculator is a calculator using a PolynomialParser and a PolynomialEvaluator
+/// to provide multiple default operations.
+///
+/// This calculator supports addition `+`, subtraction `-`, multiplication `*`,
+/// division `/` and exponentiation `^` operators, `log(number, base)`,
+/// `log10(number)` and `bind(polynomial, double)` functions, `x`, `inf`, `nan`
+/// symbols and `pi` and `e` constants.
+///
+/// While usage of the calculator is the easiest way of embedding computation
+/// engine into your program, please note that a Tokenizer, PolynomialParser and
+/// PolynomialEvaluator is created with each call, which requires reallocation
+/// of memory.
+///
+/// # Examples
+///
+/// ```
+/// # use xxcalc::polynomial_calculator::PolynomialCalculator;
+/// # use xxcalc::polynomial::Polynomial;
+/// # use xxcalc::calculator::Calculator;
+/// # use std::f64::consts::PI;
+///
+/// assert_eq!(PolynomialCalculator.process("2+2"), Ok(Polynomial::constant(4.0)));
+/// assert_eq!(PolynomialCalculator.process("(2+2)*-2"), Ok(Polynomial::constant(-8.0)));
+/// assert_eq!(String::from(PolynomialCalculator.process("(x+1)*(-0.13x^18-x^7)").unwrap()), "-0.13x^19-0.13x^18-x^8-x^7");
+/// assert_eq!(PolynomialCalculator.process("bind(pi*x^2, 10)"), Ok(Polynomial::constant(PI * 10.0 * 10.0)));
+/// ```
 pub struct PolynomialCalculator;
 
 impl Calculator<Tokenizer, PolynomialParser, PolynomialEvaluator> for PolynomialCalculator {
 
 }
 
+/// Extends Evaluator with handlers for common operators and functions.
 pub struct PolynomialEvaluator {
+  /// Underlying evaluator (one can use it to extend it furthermore)
   pub evaluator: Evaluator
 }
 
+/// Creates PolynomialEvaluator and extends the basic Evaluator.
+///
+/// Handlers for common arithmetic operations, functions and some constants
+/// are registered to the underlying evaluator.
 impl Default for PolynomialEvaluator {
   fn default() -> PolynomialEvaluator {
     let mut evaluator = Evaluator::default();
@@ -42,16 +77,23 @@ impl Default for PolynomialEvaluator {
   }
 }
 
+/// Allows usage of PolynomialEvaluator as common TokensReducer
 impl TokensReducer for PolynomialEvaluator {
   fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
 
+/// Extends Parser with common arithmetic operators with correct precedence
+/// and associativity.
 pub struct PolynomialParser {
+  /// Underlying parser (one can use it to extend it furthermore)
   pub parser: Parser
 }
 
+/// Creates PolynomialParser and extends basic Parser.
+///
+/// Common arithmetic operators are registered with the Parser.
 impl Default for PolynomialParser {
   fn default() -> PolynomialParser {
     let mut parser = Parser::default();
@@ -68,16 +110,27 @@ impl Default for PolynomialParser {
   }
 }
 
+/// Allows usage of PolynomialParser as common TokensProcessor
 impl TokensProcessor for PolynomialParser {
   fn process(&mut self, tokens: &Tokens) -> Result<&Tokens, ParsingError> {
     self.parser.process(tokens)
   }
 }
 
+/// Implementations of function handlers used in operators and functions.
+///
+/// This module is public, so when you are writing another evaluator, but
+/// it does not extend PolynomialEvaluator, you can reuse these functions
+/// as handlers for some of the common operations.
+///
+/// Operations that are directly defined on the Polynomial (such as addition,
+/// subtraction, multiplication and division), avoid cloning by using
+/// the assignment with operation, thus optimizing memory usage.
 pub mod functions {
   use polynomial::Polynomial;
   use EvaluationError;
 
+  /// Adds two polynomials together (requires two arguments).
   pub fn addition(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let b = args.pop().unwrap();
     let mut a = args.pop().unwrap();
@@ -86,6 +139,7 @@ pub mod functions {
     Ok(a)
   }
 
+  /// Subtracts two polynomials from each other (requires two arguments).
   pub fn subtraction(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let b = args.pop().unwrap();
     let mut a = args.pop().unwrap();
@@ -94,6 +148,7 @@ pub mod functions {
     Ok(a)
   }
 
+  /// Multiplies two polynomials together (requires two arguments).
   pub fn multiplication(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let b = args.pop().unwrap();
     let mut a = args.pop().unwrap();
@@ -102,6 +157,13 @@ pub mod functions {
     Ok(a)
   }
 
+  /// Divides two polynomials by each other (requires two arguments).
+  ///
+  /// # Errors
+  ///
+  /// It will return a wrapped PolynomialError when a degree of divident is
+  /// smaller than a degree of divisor or when a divident is non-constant
+  /// polynomial, while a divisor is a zero.
   pub fn division(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let b = args.pop().unwrap();
     let mut a = args.pop().unwrap();
@@ -112,18 +174,46 @@ pub mod functions {
     }
   }
 
+  /// Computes a logarithm of arbitrary base (requires two constant arguments).
+  ///
+  /// First arguments is a value to have a logarithm computed on, where a second
+  /// argument is a base of the logarithm.
+  ///
+  /// # Errors
+  ///
+  /// It will return a wrapped PolynomialError::NonConstantError when any of the
+  /// arguments is not a constant polynomial (a polynomial of degree zero).
   pub fn log(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(Polynomial::constant(try!(args[0].as_f64()).log(try!(args[1].as_f64()))))
   }
 
+  /// Computes a decimal logarithm (requires a single constant argument).
+  ///
+  /// # Errors
+  ///
+  /// It will return a wrapped PolynomialError::NonConstantError when the argument
+  /// is not a constant polynomial (a polynomial of degree zero).
   pub fn log10(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(Polynomial::constant(try!(args[0].as_f64()).log10()))
   }
 
+  /// Binds a polynomial with a value (requires two arguments).
+  ///
+  /// This function computes value of given polynomial (first argument) when
+  /// the symbol is replaced with a constant value (second argument).
+  ///
+  /// # Errors
+  ///
+  /// It will return a wrapper PolynomialError::NonConstantError when the second
+  /// argument is not a constant polynomial (a polynomial of degree zero).
   pub fn bind(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].bind(try!(args[1].as_f64())))
   }
 
+  /// Performs exponentiation of polynomial (requires two arguments).
+  ///
+  /// First argument is an exponentiation base, where second argument is
+  /// the exponent (which must be a constant polynomial).
   pub fn exponentiation(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let exponent = args.pop().unwrap();
     let base = args.pop().unwrap();
