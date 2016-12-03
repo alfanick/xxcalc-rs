@@ -29,7 +29,6 @@ use std::f64::consts::{PI, E};
 /// # use xxcalc::polynomial::Polynomial;
 /// # use xxcalc::calculator::Calculator;
 /// # use std::f64::consts::PI;
-///
 /// assert_eq!(PolynomialCalculator.process("2+2"), Ok(Polynomial::constant(4.0)));
 /// assert_eq!(PolynomialCalculator.process("(2+2)*-2"), Ok(Polynomial::constant(-8.0)));
 /// assert_eq!(String::from(PolynomialCalculator.process("(x+1)*(-0.13x^18-x^7)").unwrap()), "-0.13x^19-0.13x^18-x^8-x^7");
@@ -179,6 +178,16 @@ pub mod functions {
   /// First arguments is a value to have a logarithm computed on, where a second
   /// argument is a base of the logarithm.
   ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use xxcalc::polynomial_calculator::PolynomialCalculator;
+  /// # use xxcalc::polynomial::Polynomial;
+  /// # use xxcalc::calculator::Calculator;
+  /// assert_eq!(PolynomialCalculator.process("log(100, 10)"), Ok(Polynomial::constant(2.0)));
+  /// assert_eq!(PolynomialCalculator.process("log(256, 2)"), Ok(Polynomial::constant(8.0)));
+  /// ```
+  ///
   /// # Errors
   ///
   /// It will return a wrapped PolynomialError::NonConstantError when any of the
@@ -188,6 +197,15 @@ pub mod functions {
   }
 
   /// Computes a decimal logarithm (requires a single constant argument).
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use xxcalc::polynomial_calculator::PolynomialCalculator;
+  /// # use xxcalc::polynomial::Polynomial;
+  /// # use xxcalc::calculator::Calculator;
+  /// assert_eq!(PolynomialCalculator.process("log10(100)"), Ok(Polynomial::constant(2.0)));
+  /// ```
   ///
   /// # Errors
   ///
@@ -201,6 +219,15 @@ pub mod functions {
   ///
   /// This function computes value of given polynomial (first argument) when
   /// the symbol is replaced with a constant value (second argument).
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// # use xxcalc::polynomial_calculator::PolynomialCalculator;
+  /// # use xxcalc::polynomial::Polynomial;
+  /// # use xxcalc::calculator::Calculator;
+  /// assert_eq!(PolynomialCalculator.process("bind(x^2, 10)"), Ok(Polynomial::constant(100.0)));
+  /// ```
   ///
   /// # Errors
   ///
