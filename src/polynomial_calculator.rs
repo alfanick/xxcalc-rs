@@ -204,7 +204,7 @@ pub mod functions {
   ///
   /// # Errors
   ///
-  /// It will return a wrapper PolynomialError::NonConstantError when the second
+  /// It will return a wrapped PolynomialError::NonConstantError when the second
   /// argument is not a constant polynomial (a polynomial of degree zero).
   pub fn bind(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].bind(try!(args[1].as_f64())))
@@ -213,7 +213,19 @@ pub mod functions {
   /// Performs exponentiation of polynomial (requires two arguments).
   ///
   /// First argument is an exponentiation base, where second argument is
-  /// the exponent (which must be a constant polynomial).
+  /// the exponent (which must be a constant polynomial). Method of exponentiation
+  /// is optimized, it depends on degree of the base and a value of the exponent.
+  /// Exponentation of complicated polynomials is done subefficiently by multiplication.
+  ///
+  /// # Errors
+  ///
+  /// It will return a NonConstantExponent error when the exponient is not
+  /// a constant polynomial. Performing such operation would result in a
+  /// non-polynomial result.
+  ///
+  /// It will return a NonNaturalExponent error when the exponient is not
+  /// a natural number and the base is not a constant polynomial. Performing
+  /// such operation would result in a non-polynomial result.
   pub fn exponentiation(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     let exponent = args.pop().unwrap();
     let base = args.pop().unwrap();
@@ -224,10 +236,13 @@ pub mod functions {
     if exponent_degree > 0 {
       Err(EvaluationError::NonConstantExponent)
     } else
+    if exponent[0] == 0.0 {
+      Ok(Polynomial::constant(1.0))
+    } else
     if base_degree == 0 {
       Ok(Polynomial::constant(base[0].powf(exponent[0])))
     } else
-    if exponent[0] >= 0.0 && exponent[0].fract() == 0.0 {
+    if exponent[0] > 0.0 && exponent[0].fract() == 0.0 {
       if base_degree == 1 && base[0] == 0.0 {
         let mut v = Polynomial::zero();
         v[exponent[0] as usize] = base[1].powf(exponent[0]);
