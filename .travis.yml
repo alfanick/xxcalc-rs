@@ -27,6 +27,7 @@ addons:
     - libcurl4-openssl-dev
     - libelf-dev
     - libdw-dev
+    - libbfd-dev
 after_success:
 - travis-cargo --only stable doc-upload
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then travis-cargo coveralls --no-sudo --verify; fi
