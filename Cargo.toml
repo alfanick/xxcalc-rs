@@ -2,7 +2,7 @@
 name = "xxcalc"
 version = "0.1.0"
 authors = ["Amadeusz Juskowiak <juskowiak@amadeusz.me>"]
-keywords = ["calculator", "evaluator", "tokenizer", "lexer", "eval", "math"]
+keywords = ["calculator", "evaluator", "tokenizer", "lexer", "math"]
 repository = "https://github.com/alfanick/xxcalc-rs.git"
 homepage = "https://github.com/alfanick/xxcalc-rs.git"
 documentation = "https://alfanick.github.io/xxcalc-rs/xxcalc/index.html"
