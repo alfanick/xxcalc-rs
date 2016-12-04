@@ -1,5 +1,70 @@
 //! Defines a PolynomialCalculator with common arithmetic operations, functions
 //! and constants already defined.
+//!
+//! It supports various arithmetical operations, functions and some constants by
+//! default. Operators such as addition `+`, subtraction `-`, multiplication `*`,
+//! division `/` and exponentiation `^` are available on polynomials. Please note
+//! that a simple floating point numbers (represented using double `f64` type) are
+//! supported as well, as these are special case of a polynomial (a constant
+//! polynomial of a degree zero).
+//!
+//! Furthermore functions such as arbitrary base logarithm `log(number, base)`,
+//! decimal logarithm `log10(number)` and evaluation of the polynomial
+//! `bind(polynomial, number)` are provided by default too. Symbols such as `inf`,
+//! `nan`, `pi` and `e` are defined too.
+//!
+//! In order to write polynomials the `x` symbol must be used (which internally
+//! is a constant defining a polynomial with coefficient one for the power of one).
+//!
+//! In order to make the polynomial calculator reusable it is split into two
+//! functional units: a PolynomialParser and a PolynomialEvaluator. A PolynomialParser,
+//! extends basic infix parser with knowledge of basic arithmetic operators (`+`, `-`,
+//! `*`, `/`, `^`) with correct precedence (priority) and associativity. One can use
+//! this parser to implement the other ones. Then, a PolynomialEvaluator is defined,
+//! which extends a basic RPN evaluator with functions handling these operators and
+//! handlers for `log`, `log10` and `bind` functions, as well as the common constants.
+//!
+//! The function handlers are available in the public module, so one can reuse them
+//! when implementing a custom evaluator. These handlers try to do operations in-place
+//! where possible, as a result no additional instances of Polynomial are created.
+//!
+//! # Examples
+//!
+//! A PolynomialCalculator provides an easy way to integrate the calculator into
+//! your project. It simply takes a string expression and returns evaluated value.
+//!
+//! ```
+//! use xxcalc::polynomial_calculator::PolynomialCalculator;
+//! use xxcalc::calculator::Calculator;
+//! use xxcalc::polynomial::Polynomial;
+//!
+//! assert_eq!(PolynomialCalculator.process("(2+2)*-2"), Ok(Polynomial::constant(-8.0)));
+//! assert_eq!(PolynomialCalculator.process("(2+2)*-2").unwrap().as_f64().unwrap(), -8.0);
+//! assert_eq!(String::from(PolynomialCalculator.process("(x+1)*(-0.13x^18-x^7)").unwrap()), "-0.13x^19-0.13x^18-x^8-x^7");
+//! ```
+//!
+//! However, the highest performance can be obtained by using a tokenizer, parser and
+//! evaluator directly. A PolynomialCalculator creates a new instance of these for each
+//! evaluation, which wastes buffers and requires multiple allocations from the operating
+//! system.
+//!
+//! ```
+//! use xxcalc::tokenizer::Tokenizer;
+//! use xxcalc::polynomial_calculator::{PolynomialParser, PolynomialEvaluator};
+//! use xxcalc::{StringProcessor, TokensProcessor, TokensReducer};
+//! use xxcalc::polynomial::Polynomial;
+//!
+//! let mut tokenizer = Tokenizer::default();
+//! let mut parser = PolynomialParser::default();
+//! let evaluator = PolynomialEvaluator::default();
+//!
+//! // process some input
+//! for _ in 0..10 {
+//!   let tokenized = tokenizer.process("(2+2)*-2");
+//!   let parsed = parser.process(tokenized);
+//!   assert_eq!(evaluator.process(parsed.unwrap()), Ok(Polynomial::constant(-8.0)));
+//! }
+//! ```
 
 use super::*;
 use calculator::*;
