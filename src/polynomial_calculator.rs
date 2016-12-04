@@ -414,5 +414,7 @@ mod tests {
     assert_eq!(PolynomialCalculator.process("(x^2-3x-10)/(x+2)"), Ok(Polynomial::new(&[-5.0, 1.0])));
     assert_eq!(PolynomialCalculator.process("x^5"), Ok(Polynomial::new(&[0.0, 0.0, 0.0, 0.0, 0.0, 1.0])));
     assert_eq!(PolynomialCalculator.process("(x+1)^5"), Ok(Polynomial::new(&[1.0, 5.0, 10.0, 10.0, 5.0, 1.0])));
+    assert_eq!(PolynomialCalculator.process("2^x"), Err(CalculationError::EvaluationError(EvaluationError::NonConstantExponent)));
+    assert_eq!(PolynomialCalculator.process("x^3.14"), Err(CalculationError::EvaluationError(EvaluationError::NonNaturalExponent)));
   }
 }
