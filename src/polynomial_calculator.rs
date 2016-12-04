@@ -381,6 +381,13 @@ mod tests {
   }
 
   #[test]
+  fn test_functions() {
+    assert_eq!(PolynomialCalculator.process("log(256, 2)"), Ok(Polynomial::constant(8.0)));
+    assert_eq!(PolynomialCalculator.process("log10(100)"), Ok(Polynomial::constant(2.0)));
+    assert_eq!(PolynomialCalculator.process("bind(x^2, 10)"), Ok(Polynomial::constant(100.0)));
+  }
+
+  #[test]
   fn test_operations() {
     assert_eq!(PolynomialCalculator.process("1+1"), Ok(Polynomial::constant(2.0)));
     assert_eq!(PolynomialCalculator.process("1+-1"), Ok(Polynomial::constant(0.0)));
