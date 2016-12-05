@@ -48,7 +48,7 @@ x^9+6x^7-3x^6+12x^5-12x^4+11x^3-12x^2+6x-1
 ### Installation
 
 You need Rust programming language environment (works with stable, beta and nighly channels).
-If you don't have already installed please use [rustup.rs](https://www.rustup.rs) to easily
+If you don't have it already installed please use [rustup.rs](https://www.rustup.rs) to easily
 install the complete environment. Then you can install packaged version from the crates.io
 using `cargo install xxcalc --features interactive`.
 
@@ -63,7 +63,7 @@ $ ./target/release/xxcalc
 4
 ```
 
-Than you can copy the `xxcalc` binary wherever you prefer (like `/usr/local/bin`), however this
+Then you can copy the `xxcalc` binary wherever you prefer (like `/usr/local/bin`), however this
 builds a non-interactive version of the binary, with no support for history completion.
 
 In order to build the calculator with support for history (stored in `~/.xxcalcrs_history`),
@@ -98,7 +98,7 @@ calculator.
 
 ### Usage
 
-Add `xxcalc` as dependency in your `Cargo.toml`, than just use `xxcalc` crate and the
+Add `xxcalc` as dependency in your `Cargo.toml`, then just use `xxcalc` crate and the
 parts you need.
 
 ```
