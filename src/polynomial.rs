@@ -1,5 +1,8 @@
 //! Defines Polynomial expression with basic operators on it.
 
+extern crate smallvec;
+use self::smallvec::SmallVec;
+
 /// Polynomial struct represents a mathematical concept of polynomials.
 ///
 /// A polynomial is defined by real values of its coefficients corresponding
@@ -21,7 +24,21 @@
 #[derive(Debug, Clone)]
 pub struct Polynomial {
   /// Vector of coefficients for appropriate powers
-  coefficients: Vec<f64>
+  coefficients: SVec
+}
+type SVec = SmallVec<[f64; 4]>;
+#[inline(always)]
+fn fill_with_zeros(vec: &mut SVec, new_size: usize) {
+  if vec.len() < new_size {
+    let c = vec.capacity();
+    if c < new_size {
+      vec.reserve_exact(new_size - c);
+    }
+    let diff = new_size - vec.len();
+    for _ in 0..diff {
+      vec.push(0.0);
+    }
+  }
 }
 
 impl Polynomial {
@@ -36,7 +53,16 @@ impl Polynomial {
   /// ```
   #[inline(always)]
   pub fn new(c: &[f64]) -> Polynomial {
-    Polynomial { coefficients: c.to_vec() }
+    let mut sv = SVec::new();
+    // sv.push_all_move(c.into_iter());
+    let cap = sv.capacity();
+    if cap < c.len() {
+      sv.reserve_exact(c.len() - cap);
+    }
+    for &a in c {
+      sv.push(a);
+    }
+    Polynomial { coefficients: sv }
   }
 
   /// Creates a linear polynomial (a polynomial of degree one).
@@ -51,7 +77,11 @@ impl Polynomial {
   /// ```
   #[inline(always)]
   pub fn linear(b: f64, a: f64) -> Polynomial {
-    Polynomial { coefficients: vec![b, a] }
+    // Polynomial::new(&[b, a])
+    let mut sv = SVec::new();
+    sv.push(b);
+    sv.push(a);
+    Polynomial { coefficients: sv }
   }
 
   /// Creates a constant (degenerative) polynomial (a polynomial of
@@ -66,7 +96,10 @@ impl Polynomial {
   /// ```
   #[inline(always)]
   pub fn constant(b: f64) -> Polynomial {
-    Polynomial { coefficients: vec![b] }
+    // Polynomial::new(&[b])
+    let mut sv = SVec::new();
+    sv.push(b);
+    Polynomial { coefficients: sv }
   }
 
   /// Creates a zero polynomial (a polynomial with constant 0.0). While
@@ -82,7 +115,8 @@ impl Polynomial {
   /// ```
   #[inline(always)]
   pub fn zero() -> Polynomial {
-    Polynomial { coefficients: vec![0.0] }
+    Polynomial::constant(0.0)
+    // Polynomial { coefficients: vec![0.0] }
   }
 
   /// Computes degree of the polynomial. This method has a linear
@@ -316,7 +350,8 @@ impl Index<usize> for Polynomial {
 impl IndexMut<usize> for Polynomial {
   fn index_mut(&mut self, idx: usize) -> &mut f64 {
     if idx >= self.coefficients.len() {
-      self.coefficients.resize(idx + 1, 0.0);
+      fill_with_zeros(&mut self.coefficients, idx+1);
+      // self.coefficients.resize(idx + 1, 0.0);
     }
 
     &mut self.coefficients[idx]
@@ -350,7 +385,7 @@ impl<'a, 'b> Add<&'b Polynomial> for &'a mut Polynomial {
 
   fn add(self, other: &'b Polynomial) -> &'a Polynomial {
     if other.coefficients.len() > self.coefficients.len() {
-      self.coefficients.resize(other.coefficients.len(), 0.0);
+      fill_with_zeros(&mut self.coefficients, other.coefficients.len());
     }
 
     for (idx, &coefficient) in other.coefficients.iter().enumerate() {
@@ -434,7 +469,7 @@ impl<'a, 'b> Sub<&'b Polynomial> for &'a mut Polynomial {
 
   fn sub(self, other: &'b Polynomial) -> &'a Polynomial {
     if other.coefficients.len() > self.coefficients.len() {
-      self.coefficients.resize(other.coefficients.len(), 0.0);
+      fill_with_zeros(&mut self.coefficients, other.coefficients.len());
     }
 
     for (idx, &coefficient) in other.coefficients.iter().enumerate() {
@@ -525,8 +560,8 @@ impl<'a, 'b> Mul<&'b Polynomial> for &'a mut Polynomial {
     if self_degree == 0 && other_degree == 0 {
       self.coefficients[0] *= other.coefficients[0];
     } else {
-      let mut c = Vec::new();
-      c.resize(self_degree + other_degree + 1, 0.0);
+      let mut c = SVec::new();
+      fill_with_zeros(&mut c, self_degree + other_degree + 1);
 
       for a in 0..self_degree+1 {
         for b in 0..other_degree+1 {
@@ -713,12 +748,12 @@ impl<'a, 'b> Div<&'b Polynomial> for &'a mut Polynomial {
       }
     } else {
       let mut q = Polynomial::zero();
-      q.coefficients.resize(other_degree - other_degree + 2, 0.0);
+      fill_with_zeros(&mut q.coefficients, self_degree - other_degree + 2);
 
       while self_degree >= other_degree {
         let mut d = Polynomial::zero();
         let diff = self_degree - other_degree;
-        d.coefficients.resize(other_degree + diff + 1, 0.0);
+        fill_with_zeros(&mut d.coefficients, other_degree + diff + 1);
         for (idx, &coefficient) in other.coefficients.iter().enumerate() {
           d.coefficients[idx + diff] = coefficient;
         }
@@ -838,10 +873,10 @@ mod tests {
 
   #[test]
   fn test_initialization() {
-    assert_eq!(Polynomial::new(&[1.0, 2.0, 0.0]).coefficients, &[1.0, 2.0, 0.0]);
-    assert_eq!(Polynomial::linear(1.0, 2.0).coefficients, &[1.0, 2.0]);
-    assert_eq!(Polynomial::constant(3.14).coefficients, &[3.14]);
-    assert_eq!(Polynomial::zero().coefficients, &[0.0]);
+    assert_eq!(Polynomial::new(&[1.0, 2.0, 0.0]).coefficients.to_vec(), &[1.0, 2.0, 0.0]);
+    assert_eq!(Polynomial::linear(1.0, 2.0).coefficients.to_vec(), &[1.0, 2.0]);
+    assert_eq!(Polynomial::constant(3.14).coefficients.to_vec(), &[3.14]);
+    assert_eq!(Polynomial::zero().coefficients.to_vec(), &[0.0]);
   }
 
   #[test]
