@@ -1,6 +1,6 @@
 [package]
 name = "xxcalc"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Amadeusz Juskowiak <juskowiak@amadeusz.me>"]
 keywords = ["calculator", "evaluator", "tokenizer", "lexer", "math"]
 repository = "https://github.com/alfanick/xxcalc-rs.git"
