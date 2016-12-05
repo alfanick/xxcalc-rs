@@ -104,7 +104,7 @@ parts you need.
 ```
 # Cargo.toml
 [dependencies]
-xxcalc = "0.2.0"
+xxcalc = "0.2.1"
 ```
 
 ```rust
