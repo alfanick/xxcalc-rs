@@ -10,12 +10,15 @@ license = "MIT"
 readme = "README.md"
 description = "Embeddable or standalone robust floating-point polynomial calculator"
 
+[features]
+interactive = ["rustyline"]
+
 [[bin]]
 name = "xxcalc"
 doc = false
 
 [dependencies]
-rustyline = "1.0.0"
+rustyline = { version = "1.0.0", optional = true }
 
 [profile.release]
 lto = true

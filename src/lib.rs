@@ -1,4 +1,42 @@
-//! foo bar
+//! `xxcalc` is a crate which provides an embeddable floating-point
+//! polynomial calculator and linear solver.
+//!
+//! You can use `xxcalc` to embed mathematical expression evaluator
+//! in your own programs. By default the calculator provides addition `+`,
+//! subtraction `-`, multiplication `*`, division `/` and exponentation `^`
+//! operators. Some functions such as `log` and `log10` are implemented,
+//! as well as `pi` and `e` constants. This is a polynomial calculator, so
+//! you can perform arithmetic operations on polynomials (using `x` symbol
+//! by default) - a simple floating-point number is just a special case of
+//! a polynomial (the constant polynomial, polynomial of degree zero).
+//!
+//! Furthermore the crate is well structurized and documented - you can use
+//! pieces it provides to create your own custom solutions (you can use or change
+//! a tokenizer, parser and evaluator however you want). Look at implementations
+//! of PolynomialParser, LinearSolverParser, PolynomialEvaluator or
+//! LinearSolverEvaluator to see how to extend default implementations.
+//!
+//! With the crate a `xxcalc` binary is provided which can be used as a
+//! standalone CLI calculator (which can be replacement for `bc` command).
+//!
+//! # Examples
+//!
+//! You can easily take a LinearSolver or PolynomialCalculator to embed
+//! mathematical engine inside your programs.
+//!
+//! ```
+//! use xxcalc::linear_solver::LinearSolver;
+//! use xxcalc::calculator::Calculator;
+//! use xxcalc::polynomial::Polynomial;
+//!
+//! assert_eq!(LinearSolver.process("2x + 1 = 2(1-x)"), Ok(Polynomial::constant(0.25)));
+//! assert_eq!(LinearSolver.process("0.1*-2+4"), Ok(Polynomial::constant(3.8)));
+//! ```
+//!
+//! Please see documentation for [PolynomialCalculator] for more examples.
+//!
+//! [PolynomialCalculator]: polynomial_calculator/index.html
+
 pub mod polynomial;
 #[macro_use]
 pub mod tokenizer;
