@@ -63,7 +63,7 @@ $ ./target/release/xxcalc
 4
 ```
 
-Than you can copy the `xxcalc` binary wherever you prefer (like `/usr/local/bin`), however this
+Then you can copy the `xxcalc` binary wherever you prefer (like `/usr/local/bin`), however this
 builds a non-interactive version of the binary, with no support for history completion.
 
 In order to build the calculator with support for history (stored in `~/.xxcalcrs_history`),
@@ -98,7 +98,7 @@ calculator.
 
 ### Usage
 
-Add `xxcalc` as dependency in your `Cargo.toml`, than just use `xxcalc` crate and the
+Add `xxcalc` as dependency in your `Cargo.toml`, then just use `xxcalc` crate and the
 parts you need.
 
 ```
