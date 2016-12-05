@@ -18,6 +18,12 @@
 //!
 //! With the crate a `xxcalc` binary is provided which can be used as a
 //! standalone CLI calculator (which can be replacement for `bc` command).
+//! If the crate is installed with a feature "interactive" enabled, a history
+//! of commands is enabled.
+//!
+//! Whole library is meticulously tested, use `cargo test` to run unit tests
+//! (including doc examples), `cargo bench` will run simple benchmarks, while
+//! `cargo bench -- --ignored` will run more computation-heavy benchmarks.
 //!
 //! # Examples
 //!
