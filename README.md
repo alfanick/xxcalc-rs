@@ -39,11 +39,11 @@ x^9+6x^7-3x^6+12x^5-12x^4+11x^3-12x^2+6x-1
 * `+`, `-`, `*`, `/`, `^` operators on floating-point polynomials
 * scientific notation and negative numbers
 * polynomials representation using `x` symbol
-* solving linear equations solver using `=` operators
+* solving linear equations solver using `=` operator
 * `log(number, base)`, `log10(number)`, `bind(polynomial, x value)` built-in functions
 * `pi` and `e` constants
 * input read from stdin (can be used for piping)
-* interactive readline-like with history mode
+* interactive readline-like mode with history
 
 ### Installation
 
@@ -76,7 +76,8 @@ $ ./target/release/xxcalc
 
 ### Benchmarks
 
-Coming soon.
+Coming soon. It is at least 2.5 times faster than `bc` and incomparable quicker than
+[GNU Octave](https://www.gnu.org/software/octave/).
 
 ## Library
 
@@ -91,6 +92,32 @@ The calculator is meant to be extensible -- you can register your own functions 
 You can even change tokenizer, parser or an evaluator into your own. Furthermore a `Polynomial`
 is a standalone type which can be used in your projects without usage of other features of the
 calculator.
+
+### Usage
+
+Add `xxcalc` as dependency in your `Cargo.toml`, than just use `xxcalc` crate and the
+parts you need.
+
+```
+# Cargo.toml
+[dependencies]
+xxcalc = "0.2.0"
+```
+
+```rust
+extern crate xxcalc;
+
+use xxcalc::linear_solver::LinearSolver;
+use xxcalc::calculator::Calculator;
+use xxcalc::polynomial::Polynomial;
+
+fn main() {
+  println!("The result is {}", LinearSolver.process("2+2").unwrap());
+}
+```
+
+Many usage hints and scenarios are available in
+[the documentation](https://alfanick.github.io/xxcalc-rs/xxcalc/index.html).
 
 ### Tests
 
