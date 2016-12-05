@@ -8,7 +8,8 @@ use self::smallvec::SmallVec;
 /// A polynomial is defined by real values of its coefficients corresponding
 /// to natural-numbered powers of the variable x. As coefficients are represented
 /// as continous vector, storing polynomials of high degree, but with most
-/// terms empty is quite expensive (`x^1023` makes vector of size 1024).
+/// terms empty is quite expensive (`x^1023` makes vector of size 1024). A
+/// SmallVec is used, so coefficients up to power of 3 are stored on the stack.
 ///
 /// As one can imagine `x^3.14` is not a polynomial, while `3.14x^2+2` is a
 /// polynomial.
@@ -26,7 +27,11 @@ pub struct Polynomial {
   /// Vector of coefficients for appropriate powers
   coefficients: SVec
 }
+
+/// Coefficients type
 type SVec = SmallVec<[f64; 4]>;
+
+/// Resizes SmallVector and initializes it with zeros
 #[inline(always)]
 fn fill_with_zeros(vec: &mut SVec, new_size: usize) {
   if vec.len() < new_size {
@@ -54,7 +59,6 @@ impl Polynomial {
   #[inline(always)]
   pub fn new(c: &[f64]) -> Polynomial {
     let mut sv = SVec::new();
-    // sv.push_all_move(c.into_iter());
     let cap = sv.capacity();
     if cap < c.len() {
       sv.reserve_exact(c.len() - cap);
@@ -77,7 +81,6 @@ impl Polynomial {
   /// ```
   #[inline(always)]
   pub fn linear(b: f64, a: f64) -> Polynomial {
-    // Polynomial::new(&[b, a])
     let mut sv = SVec::new();
     sv.push(b);
     sv.push(a);
@@ -96,7 +99,6 @@ impl Polynomial {
   /// ```
   #[inline(always)]
   pub fn constant(b: f64) -> Polynomial {
-    // Polynomial::new(&[b])
     let mut sv = SVec::new();
     sv.push(b);
     Polynomial { coefficients: sv }
@@ -116,7 +118,6 @@ impl Polynomial {
   #[inline(always)]
   pub fn zero() -> Polynomial {
     Polynomial::constant(0.0)
-    // Polynomial { coefficients: vec![0.0] }
   }
 
   /// Computes degree of the polynomial. This method has a linear
@@ -351,7 +352,6 @@ impl IndexMut<usize> for Polynomial {
   fn index_mut(&mut self, idx: usize) -> &mut f64 {
     if idx >= self.coefficients.len() {
       fill_with_zeros(&mut self.coefficients, idx+1);
-      // self.coefficients.resize(idx + 1, 0.0);
     }
 
     &mut self.coefficients[idx]
