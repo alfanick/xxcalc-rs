@@ -3,7 +3,7 @@
 An embeddable or a standalone robust floating-point polynomial calculator written in Rust.
 
 This project is a Rust crate (library) which provides a floating-point numbers calculator
-in an easy too use API. Furthermore a basic unit of computation is a polynomial, so multiple
+in an easy to use API. Furthermore a basic unit of computation is a polynomial, so multiple
 arithmetic operations can be done using `x` symbols.
 
 You can use this library in your own projects as mathematical evaluator or as a standalone,
