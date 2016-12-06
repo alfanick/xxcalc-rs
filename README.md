@@ -7,7 +7,7 @@ in an easy to use API. Furthermore a basic unit of computation is a polynomial, 
 arithmetic operations can be done using `x` symbols.
 
 You can use this library in your own projects as mathematical evaluator or as a standalone,
-command line calculator by using `xxcalc` binary. Internally it uses hand-mande tokenizer and
+command line calculator by using `xxcalc` binary. Internally it uses hand-made tokenizer and
 a Dijskatra's shunting-yard algorithm to convert infix form into Reverse Polish Notation,
 which is later evaluated. Please see the [complete documentation](https://alfanick.github.io/xxcalc-rs/xxcalc/index.html)
 for the implementation details.
@@ -127,7 +127,7 @@ The projects is thoroughly unit tested, some examples are directly provided in t
 documentation. Use `cargo test` to run the unit tests.
 
 If you have a Rust nighly compiler you can run some built-in bencharks using `cargo bench`.
-Some more extensive benchmarks (using large expressions) can be run using `carbo bench -- --ignored`.
+Some more extensive benchmarks (using large expressions) can be run using `cargo bench -- --ignored`.
 
 # License
 
