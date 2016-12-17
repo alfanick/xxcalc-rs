@@ -24,7 +24,7 @@ mod benchmarks {
     parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
     parser.register_operator('-', Operator::new(1, OperatorAssociativity::Left));
 
-    b.bytes = add_sub_r.len() as u64 * 10 * 4;
+    b.bytes = add_sub_r.len() as u64 * 10;
     b.iter(|| {
       (0..10).fold(0, |a, x| a + x + parser.process(tokens).unwrap().tokens.len())
     });
@@ -37,7 +37,7 @@ mod benchmarks {
     let mut parser = Parser::default();
     parser.register_operator('+', Operator::new(1, OperatorAssociativity::Left));
 
-    b.bytes = 3 * 4;
+    b.bytes = 3;
     b.iter(|| {
        parser.process(tokens).unwrap().tokens.len()
     });
@@ -49,7 +49,7 @@ mod benchmarks {
     let tokens = tokenizer.process("foo(2, 2)");
     let mut parser = Parser::default();
 
-    b.bytes = 9 * 4;
+    b.bytes = 9;
     b.iter(|| {
        parser.process(tokens).unwrap().tokens.len()
     });
@@ -62,7 +62,7 @@ mod benchmarks {
     let mut tokenizer = Tokenizer::default();
     let tokens = tokenizer.process(add_sub_r);
 
-    b.bytes = add_sub_r.len() as u64 * 10 * 4;
+    b.bytes = add_sub_r.len() as u64 * 10;
     b.iter(|| {
       (0..10).fold(0, |a, x| {
         let mut parser = Parser::default();
