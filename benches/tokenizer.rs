@@ -18,6 +18,8 @@ pub mod benchmarks {
     let add_sub_r = &add_sub_gen(100000);
     let mut tokenizer = Tokenizer::default();
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
+
     b.iter(|| {
       (0..10).fold(0, |a, x| a + x + tokenizer.process(add_sub_r).tokens.len())
     });
@@ -27,6 +29,8 @@ pub mod benchmarks {
   #[ignore]
   fn bench_tokenizer_without_arena(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
+
+    b.bytes = add_sub_r.len() as u64 * 10 *  4;
 
     b.iter(|| {
       (0..10).fold(0, |a, x| {
@@ -40,6 +44,8 @@ pub mod benchmarks {
   fn bench_tokenizer_numbers(b: &mut Bencher) {
     let mut tokenizer = Tokenizer::default();
 
+    b.bytes = 18 * 4;
+
     b.iter(|| {
       tokenizer.process("3.1415926535897932").tokens.len()
     });
@@ -48,6 +54,8 @@ pub mod benchmarks {
   #[bench]
   fn bench_tokenizer_short_numbers(b: &mut Bencher) {
     let mut tokenizer = Tokenizer::default();
+
+    b.bytes = 1 * 4;
 
     b.iter(|| {
       tokenizer.process("2").tokens.len()
@@ -58,6 +66,8 @@ pub mod benchmarks {
   fn bench_tokenizer_identifiers(b: &mut Bencher) {
     let mut tokenizer = Tokenizer::default();
 
+    b.bytes = 18 * 4;
+
     b.iter(|| {
       tokenizer.process("_lorem_ipsum_dolor").tokens.len()
     });
@@ -66,6 +76,8 @@ pub mod benchmarks {
   #[bench]
   fn bench_tokenizer_short_identifiers(b: &mut Bencher) {
     let mut tokenizer = Tokenizer::default();
+
+    b.bytes = 1 * 4;
 
     b.iter(|| {
       tokenizer.process("x").tokens.len()
@@ -76,6 +88,8 @@ pub mod benchmarks {
   fn bench_tokenizer_brackets(b: &mut Bencher) {
     let mut tokenizer = Tokenizer::default();
 
+    b.bytes = 1 * 4;
+
     b.iter(|| {
       tokenizer.process("(").tokens.len()
     });
@@ -84,6 +98,8 @@ pub mod benchmarks {
   #[bench]
   fn bench_tokenizer_operators(b: &mut Bencher) {
     let mut tokenizer = Tokenizer::default();
+
+    b.bytes = 1 * 4;
 
     b.iter(|| {
       tokenizer.process("+").tokens.len()

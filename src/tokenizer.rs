@@ -1,13 +1,13 @@
-//! Tokenizer is a StringProcessor, it takes string expression
+//! `Tokenizer` is a `StringProcessor`, it takes string expression
 //! and converts it into Tokens for further processing.
 
 use super::*;
 
-/// Tokenizer performs the very first step of parsing mathematical
-/// expression into Tokens. These tokens can be then processed by
-/// TokensProcessor.
+/// `Tokenizer` performs the very first step of parsing mathematical
+/// expression into `Tokens`. These tokens can be then processed by
+/// `TokensProcessor`.
 ///
-/// Tokenizer is a state machine, which can be reused multiple
+/// `Tokenizer` is a state machine, which can be reused multiple
 /// times. Internally it stores a buffer of Tokens, which can
 /// be reused multiple times without requesting new memory from
 /// the operating system. If Tokenizer lives long enough this
@@ -96,13 +96,13 @@ impl Default for Tokenizer {
 ///
 /// New features can be add to tokenizer by either embedding this
 /// tokenizer into new one and replacing Unknown tokens with some
-/// other tokens or by implementing a TokensProcessor which takes
+/// other tokens or by implementing a `TokensProcessor` which takes
 /// output of this tokenizer and replaces Unknown tokens or some
 /// combination of tokens with other ones.
 ///
 /// # State machine
 ///
-/// Complete, hand-designed state machine used by this StringProcessor
+/// Complete, hand-designed state machine used by this `StringProcessor`
 /// can be seen in the image below:
 ///
 /// ![Tokenizer State Machine](http://public.amadeusz.me/documents/tokenizer.svg)
@@ -210,7 +210,7 @@ impl Tokenizer {
         if self.previous_state == State::Number ||
            self.previous_state == State::NumberExponent {
           self.tokens.push(self.value_position,
-                              Token::Number(self.value.parse().unwrap()));
+                                Token::Number(self.value.parse().unwrap()));
           self.value.clear();
         } else
         if self.previous_state == State::Identifier {
@@ -218,37 +218,35 @@ impl Tokenizer {
           self.value.clear();
         }
       }
-    } else {
-      if self.state == State::Number ||
-         self.state == State::NumberExponent {
-        self.tokens.push(self.value_position,
+    } else
+    if self.state == State::Number ||
+       self.state == State::NumberExponent {
+      self.tokens.push(self.value_position,
                             Token::Number(self.value.parse().unwrap()));
-      } else
-      if self.state == State::Identifier {
-        self.tokens.push_identifier(self.value_position, &self.value);
-      }
+    } else
+    if self.state == State::Identifier {
+      self.tokens.push_identifier(self.value_position, &self.value);
     }
   }
 
   #[inline(always)]
   fn implicit_multiplication(&mut self, position: usize, character: char) {
-    if character == '(' || character.is_alphabetic() {
-      if self.previous_state == State::NumberSign ||
-         self.previous_state == State::NumberExponent ||
-         (self.previous_state == State::Number && character != 'e') {
+    if (character == '(' || character.is_alphabetic()) &&
+       (self.previous_state == State::NumberSign ||
+        self.previous_state == State::NumberExponent ||
+        (self.previous_state == State::Number && character != 'e')) {
 
-        self.tokens.push(self.value_position,
-                               if self.previous_state == State::NumberSign {
-                                 Token::Number(if self.value.starts_with('-') {-1.0} else {1.0})
-                               } else {
-                                 Token::Number(self.value.parse().unwrap())
-                               });
+      self.tokens.push(self.value_position,
+                         if self.previous_state == State::NumberSign {
+                           Token::Number(if self.value.starts_with('-') {-1.0} else {1.0})
+                         } else {
+                           Token::Number(self.value.parse().unwrap())
+                         });
 
-        self.value.clear();
-        self.tokens.push(self.value_position, Token::Operator('*'));
-        self.value_position = position;
-        self.previous_state = State::General;
-      }
+      self.value.clear();
+      self.tokens.push(self.value_position, Token::Operator('*'));
+      self.value_position = position;
+      self.previous_state = State::General;
     }
   }
 }

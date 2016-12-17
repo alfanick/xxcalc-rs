@@ -1,4 +1,4 @@
-//! Parser is a TokensProcessor, it takes Tokens in a classical
+//! `Parser` is a `TokensProcessor`, it takes `Tokens` in a classical
 //! infix form and transforms them into Reverse Polish Notation
 //! form for further evaluation.
 
@@ -41,13 +41,13 @@ impl Operator {
   }
 }
 
-/// Parser takes Tokens in infix form and transforms them into
+/// `Parser` takes `Tokens` in infix form and transforms them into
 /// Reverse Polish Notation. After such transformation tokens
-/// can be processed by TokensReducer.
+/// can be processed by `TokensReducer`.
 ///
 /// Parser stores registered operators (with their precedence and
 /// associativity) between multiple executions. Furthermore an
-/// output buffer of Tokens is kept internally, so it can be reused
+/// output buffer of `Tokens` is kept internally, so it can be reused
 /// without allocating new memory from the operating system. If
 /// Parser lives long enough this behaviour can greatly reduce
 /// time wasted on mallocs.
@@ -73,8 +73,8 @@ impl Operator {
 ///
 /// # Extending
 ///
-/// One could embed the parser inside another TokensProcessor and initialize
-/// is there with some default operators.
+/// One could embed the parser inside another `TokensProcessor` and initialize
+/// it there with some default operators.
 pub struct Parser {
   operators: BTreeMap<char, Operator>,
   output: Tokens
@@ -113,7 +113,7 @@ impl Default for Parser {
 ///
 /// # Errors
 ///
-/// An EmptyExpression error is returned when tokens represent
+/// An `EmptyExpression` error is returned when tokens represent
 /// no meaningful expression (no tokens or just brackets).
 ///
 /// ```
@@ -125,7 +125,7 @@ impl Default for Parser {
 /// assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::EmptyExpression);
 /// ```
 ///
-/// A MissingBracket error is returned when brackets are unbalanced,
+/// A `MissingBracket` error is returned when brackets are unbalanced,
 /// no matter if they were used to mark subexpression or an argument
 /// list.
 ///
@@ -152,8 +152,8 @@ impl Default for Parser {
 /// }
 /// ```
 ///
-/// An UnexpectedToken error is returned when parser encounters a token
-/// with no meaning to the algorithm (such as Token::Unknown).
+/// An `UnexpectedToken` error is returned when parser encounters a token
+/// with no meaning to the algorithm (such as `Token::Unknown`).
 ///
 /// ```
 /// # use xxcalc::tokenizer::Tokenizer;
@@ -167,7 +167,7 @@ impl Default for Parser {
 /// assert_eq!(parser.process(tokenized).unwrap_err(), ParsingError::UnexpectedToken(Token::Unknown('@'), 3));
 /// ```
 ///
-/// An UnknownOperator error is returned when a parser encounters an operator
+/// An `UnknownOperator` error is returned when a parser encounters an operator
 /// token, but this operator is not registerd with the parser.
 ///
 /// ```
@@ -321,8 +321,8 @@ impl Parser {
       _ => unreachable!()
     };
 
-    return (*a_assoc == OperatorAssociativity::Left && a_prec <= b_prec) ||
-           (*a_assoc == OperatorAssociativity::Right && a_prec < b_prec);
+    (*a_assoc == OperatorAssociativity::Left && a_prec <= b_prec) ||
+    (*a_assoc == OperatorAssociativity::Right && a_prec < b_prec)
   }
 }
 

@@ -37,6 +37,8 @@ mod benchmarks {
       Ok(args[0].clone() + args[1].clone())
     })));
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
+
     b.iter(|| {
       (0..10).fold(0.0, |a, _| a + evaluator.process(parsed_tokens).unwrap()[0])
     });
@@ -57,6 +59,7 @@ mod benchmarks {
     let _ = evaluator.register_function("+", Function::new(2, Box::new(addition)));
     let _ = evaluator.register_function("-", Function::new(2, Box::new(subtraction)));
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
     b.iter(|| {
       (0..10).fold(0.0, |a, _| a + evaluator.process(parsed_tokens).unwrap()[0])
     });
@@ -70,6 +73,7 @@ mod benchmarks {
     let parsed_tokens = parser.process(tokens).unwrap();
     let evaluator = Evaluator::new();
 
+    b.bytes = 4 * 4;
     b.iter(|| {
       evaluator.process(parsed_tokens).unwrap()
     });
@@ -84,6 +88,7 @@ mod benchmarks {
     let mut evaluator = Evaluator::new();
     let _ = evaluator.register_constant("pi", Polynomial::constant(3.14));
 
+    b.bytes = 2 * 4;
     b.iter(|| {
       evaluator.process(parsed_tokens).unwrap()
     });

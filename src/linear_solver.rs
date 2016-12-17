@@ -1,20 +1,20 @@
-//! Defines a LinearSolver which extends a PolynomialCalculator with
+//! Defines a `LinearSolver` which extends a `PolynomialCalculator` with
 //! ability of solving single linear equation.
 //!
 //! It supports the very same operations and functions as the
-//! PolynomialCalculator, however a new operator `=` is defined which
+//! `PolynomialCalculator`, however a new operator `=` is defined which
 //! solves a linear equation.
 //!
-//! One can use LinearSolverParser, LinearSolverEvaluator or functions
+//! One can use `LinearSolverParser`, `LinearSolverEvaluator` or functions
 //! module in their own implementations, so there is no need of reimplementing
 //! this functionality.
 //!
 //! # Examples
 //!
-//! A LinearSolver provides an easy way to integrate a solver and calculator into
+//! A `LinearSolver` provides an easy way to integrate a solver and calculator into
 //! your project. It simply takes a string expression and returns evaluated value,
 //! however if you need high-efficiency solution you should consider using
-//! LinearSolverParser and LinearSolverEvaluator directly.
+//! `LinearSolverParser` and `LinearSolverEvaluator` directly.
 //!
 //! ```
 //! use xxcalc::linear_solver::LinearSolver;
@@ -35,14 +35,14 @@ use tokenizer::Tokenizer;
 use polynomial_calculator::{PolynomialParser, PolynomialEvaluator};
 use polynomial::Polynomial;
 
-/// LinearSolver is a calculator using a LinearSolverParser and a LinearSolverEvaluator,
+/// `LinearSolver` is a calculator using a `LinearSolverParser` and a `LinearSolverEvaluator`,
 /// to provide multiple arithmetic operations and basic linear solver capability.
 ///
-/// The solver support the same operators as a PolynomialCalculator, but it adds
+/// The solver support the same operators as a `PolynomialCalculator`, but it adds
 /// `=` operator which tries to solve value of `x` and returns it.
 ///
 /// While usage of the solver is the easiest way of embedding solving engine into
-/// your program, please note that a Tokenizer, LinearSolverParser and LinearSolverEvaluator
+/// your program, please note that a `Tokenizer`, `LinearSolverParser` and `LinearSolverEvaluator`
 /// is created with each call, which requires reallocation of memory.
 ///
 /// # Examples
@@ -61,13 +61,13 @@ impl Calculator<Tokenizer, LinearSolverParser, LinearSolverEvaluator> for Linear
 
 }
 
-/// Extends PolynomialEvaluator with handler for linear solver operator.
+/// Extends `PolynomialEvaluator` with handler for linear solver operator.
 pub struct LinearSolverEvaluator {
   /// Underlying evaluator (one can use it to extend it furthermore)
   pub evaluator: Evaluator
 }
 
-/// Creates a LinearSolverEvaluator and extends the PolynomialEvaluator.
+/// Creates a `LinearSolverEvaluator` and extends the `PolynomialEvaluator`.
 ///
 /// Handler for linear solver operator is registered to the underlying evalutor.
 impl Default for LinearSolverEvaluator {
@@ -82,14 +82,14 @@ impl Default for LinearSolverEvaluator {
   }
 }
 
-/// Allows usage of LinearSolverEvaluator as common TokensReducer
+/// Allows usage of `LinearSolverEvaluator` as common `TokensReducer`
 impl TokensReducer for LinearSolverEvaluator {
   fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
 
-/// Extends PolynomialParser with a solving operator `=` with minimal
+/// Extends `PolynomialParser` with a solving operator `=` with minimal
 /// precedence.
 pub struct LinearSolverParser {
   /// Underlying parser (one can use it to extend it furthermore)
@@ -98,9 +98,9 @@ pub struct LinearSolverParser {
 
 use std::i64;
 
-/// Creates LinearSolverParser and extends a PolynomialParser.
+/// Creates `LinearSolverParser` and extends a `PolynomialParser`.
 ///
-/// A linear solving operator `=` is registered to the PolynomialParser. Its
+/// A linear solving operator `=` is registered to the `PolynomialParser`. Its
 /// precedence is minimal, so LHS and RHS are always evaluated before solving.
 impl Default for LinearSolverParser {
   fn default() -> LinearSolverParser {
@@ -114,7 +114,7 @@ impl Default for LinearSolverParser {
   }
 }
 
-/// Allows usage of LinearSolverParser as common TokensProcessor
+/// Allows usage of `LinearSolverParser` as common `TokensProcessor`
 impl TokensProcessor for LinearSolverParser {
   fn process(&mut self, tokens: &Tokens) -> Result<&Tokens, ParsingError> {
     self.parser.process(tokens)
@@ -124,7 +124,7 @@ impl TokensProcessor for LinearSolverParser {
 /// Implementation of solving operator handler.
 ///
 /// This module is public, so when you are writing another evaluator, but
-/// it does not extend LinearSolverEvaluator, you can reuse this handler
+/// it does not extend `LinearSolverEvaluator`, you can reuse this handler
 /// without reimplementing.
 pub mod functions {
   use super::*;
@@ -141,7 +141,7 @@ pub mod functions {
   ///
   /// The solver detects multiple situations where solving is not possible.
   ///
-  /// A NonLinear error is returned when provided equation is not linear (has
+  /// A `NonLinear` error is returned when provided equation is not linear (has
   /// a polynomial of degree greater than one).
   ///
   /// ```
@@ -151,7 +151,7 @@ pub mod functions {
   /// assert_eq!(LinearSolver.process("x^2=1").unwrap_err(), CalculationError::EvaluationError(EvaluationError::SolvingError(SolvingError::NonLinear)));
   /// ```
   ///
-  /// A NoSymbol error is returned when provided expression is not really an equation
+  /// A `NoSymbol` error is returned when provided expression is not really an equation
   /// to solve, as there is no symbol `x` used.
   ///
   /// ```
@@ -161,7 +161,7 @@ pub mod functions {
   /// assert_eq!(LinearSolver.process("0=0").unwrap_err(), CalculationError::EvaluationError(EvaluationError::SolvingError(SolvingError::NoSymbol)));
   /// ```
   ///
-  /// A Tautology error is returned when provided equation is solvable for any
+  /// A `Tautology` error is returned when provided equation is solvable for any
   /// value of `x`.
   ///
   /// ```
@@ -171,7 +171,7 @@ pub mod functions {
   /// assert_eq!(LinearSolver.process("x=x").unwrap_err(), CalculationError::EvaluationError(EvaluationError::SolvingError(SolvingError::Tautology)));
   /// ```
   ///
-  /// A NonSolvable error is returned when provided equation has no solutions.
+  /// A `NonSolvable` error is returned when provided equation has no solutions.
   ///
   /// ```
   /// # use xxcalc::linear_solver::{LinearSolver, SolvingError};

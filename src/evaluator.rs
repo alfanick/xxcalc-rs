@@ -1,4 +1,4 @@
-//! Evaluator is a TokensReducer, it takes token in RPN form
+//! `Evaluator` is a `TokensReducer`, it takes token in RPN form
 //! and evaluates its Polynomial value.
 
 use super::*;
@@ -6,7 +6,7 @@ use polynomial::{Polynomial, PolynomialError};
 use std::collections::BTreeMap;
 use std::fmt;
 
-/// Pointer to function processing Polynomial arguments.
+/// Pointer to function processing `Polynomial` arguments.
 ///
 /// Such function takes a defined number of Polynomial
 /// arguments and transform them into a single Polynomial
@@ -18,8 +18,8 @@ pub type FunctionHandle = Box<Fn(Vec<Polynomial>) -> Result<Polynomial, Evaluati
 ///
 /// A function is used to implement operators and other
 /// functions in the evaluator. Each function consist
-/// of FunctionHandle which process arguments into a single
-/// Polynomial value.
+/// of `FunctionHandle` which process arguments into a single
+/// `Polynomial` value.
 ///
 /// A function handle is guaranteed to receive a defined
 /// number of arguments, as this is checked during the
@@ -30,7 +30,7 @@ pub struct Function {
   handle: FunctionHandle
 }
 
-/// Debug formatter for Function
+/// Debug formatter for `Function`
 impl fmt::Debug for Function {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "Function(arity: {}, handle: ?)", self.arity)
@@ -63,7 +63,7 @@ impl Function {
   }
 }
 
-/// Evaluator takes Tokens in Reverse Polish Notation and evaluates
+/// Evaluator takes `Tokens` in Reverse Polish Notation and evaluates
 /// them using defined functions and constants into a sngle Polynomial
 /// value.
 ///
@@ -100,7 +100,7 @@ impl Function {
 /// # Extending
 ///
 /// One can directly register functions or constants with the evaluator,
-/// or embed the evalutor in another TokensReducer which will add these
+/// or embed the evalutor in another `TokensReducer` which will add these
 /// handlers by default.
 pub struct Evaluator {
   functions: BTreeMap<String, Function>,
@@ -120,7 +120,7 @@ impl Default for Evaluator {
 
 /// This is a main processing unit in the evaluator. It takes
 /// tokens in Reverse Polish Notation and evaluates them into
-/// a single Polynomial value.
+/// a single `Polynomial` value.
 ///
 /// Before evaluating functions, operators or constants they
 /// must be registered, as evaluator has no knowledge what to
@@ -139,12 +139,12 @@ impl Default for Evaluator {
 ///
 /// # Errors
 ///
-/// A PolynomialError is returned when underlying function handler returns
+/// A `PolynomialError` is returned when underlying function handler returns
 /// an error (it may happen as a result of converting non constant to float,
 /// division by zero of polynomials or division of polynomials with wrong
 /// degree).
 ///
-/// A MultipleExpressions error is returned when there are multiple tokens
+/// A `MultipleExpressions` error is returned when there are multiple tokens
 /// left on the stack. It is causes by providing to many arguments to a
 /// function or giving too many expressions.
 ///
@@ -173,7 +173,7 @@ impl Default for Evaluator {
 /// }
 /// ```
 ///
-/// An ArgumentMissing error is returned when number of tokens on a stack
+/// An `ArgumentMissing` error is returned when number of tokens on a stack
 /// is less than required arity of given functions. The error contains
 /// required arity and position of error.
 ///
@@ -208,7 +208,7 @@ impl Default for Evaluator {
 /// }
 /// ```
 ///
-/// An UnknownSymbol error is returned when an operator or identifier token is
+/// An `UnknownSymbol` error is returned when an operator or identifier token is
 /// encountered with a name of unregistered function or constant. Each operator,
 /// function and constant need to be registered before it can be evaluated.
 ///
@@ -425,7 +425,7 @@ impl Evaluator {
   }
 }
 
-/// Encloses PolynomialError into an EvaluationError
+/// Encloses `PolynomialError` into an `EvaluationError`
 impl From<PolynomialError> for EvaluationError {
   fn from(e: PolynomialError) -> EvaluationError {
     EvaluationError::PolynomialError(e)

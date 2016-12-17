@@ -13,8 +13,8 @@
 //! Furthermore the crate is well structurized and documented - you can use
 //! pieces it provides to create your own custom solutions (you can use or change
 //! a tokenizer, parser and evaluator however you want). Look at implementations
-//! of PolynomialParser, LinearSolverParser, PolynomialEvaluator or
-//! LinearSolverEvaluator to see how to extend default implementations.
+//! of `PolynomialParser`, `LinearSolverParser`, `PolynomialEvaluator` or
+//! `LinearSolverEvaluator` to see how to extend default implementations.
 //!
 //! With the crate a `xxcalc` binary is provided which can be used as a
 //! standalone CLI calculator (which can be replacement for `bc` command).
@@ -27,7 +27,7 @@
 //!
 //! # Examples
 //!
-//! You can easily take a LinearSolver or PolynomialCalculator to embed
+//! You can easily take a `LinearSolver` or `PolynomialCalculator` to embed
 //! mathematical engine inside your programs.
 //!
 //! ```
@@ -39,9 +39,9 @@
 //! assert_eq!(LinearSolver.process("0.1*-2+4"), Ok(Polynomial::constant(3.8)));
 //! ```
 //!
-//! Please see documentation for [PolynomialCalculator] for more examples.
+//! Please see documentation for [`PolynomialCalculator`] for more examples.
 //!
-//! [PolynomialCalculator]: polynomial_calculator/index.html
+//! [`PolynomialCalculator`]: polynomial_calculator/index.html
 
 pub mod polynomial;
 #[macro_use]
@@ -55,11 +55,11 @@ pub mod linear_solver;
 use std::ops::Index;
 use std::collections::BTreeMap;
 
-/// Token is a basic unit returned after tokenization using
-/// a StringProcessor.
+/// `Token` is a basic unit returned after tokenization using
+/// a `StringProcessor`.
 ///
-/// Token can be than rearranged with a TokensProcessor and
-/// interpreted (evaluated) to a Polynomial using a TokensReducer.
+/// `Token` can be than rearranged with a `TokensProcessor` and
+/// interpreted (evaluated) to a `Polynomial` using a `TokensReducer`.
 ///
 /// Tokens are used to conveniently store expressions in partially
 /// parsed and computer readable form.
@@ -92,14 +92,14 @@ pub type TokenList = Vec<(usize, Token)>;
 
 /// Vector of unique identifiers.
 ///
-/// Token::Identifier stores just a location in this vector,
+/// `Token::Identifier` stores just a location in this vector,
 /// this keeps size of individual tokens minimal.
 pub type Identifiers = Vec<String>;
 
-/// Tokens is a compound storage for list of tokens with
+/// `Tokens` is a compound storage for list of tokens with
 /// their identifiers.
 ///
-/// A TokenList is invalid without Identifiers, therefore
+/// A `TokenList` is invalid without Identifiers, therefore
 /// this struct keeps them always together. Furthermore
 /// a lookup table is kept, so creating new identifier is
 /// a relatively quick task.
@@ -107,14 +107,14 @@ pub type Identifiers = Vec<String>;
 pub struct Tokens {
   /// List of tokens
   pub tokens: TokenList,
-  /// Identifier strings used in Token::Identifier
+  /// Identifier strings used in `Token::Identifier`
   pub identifiers: Identifiers,
   lookup: BTreeMap<String, usize>
 }
 
 /// Transforms text expression into list of tokens.
 ///
-/// A StringProcessor can be implemented for a tokenizer (lexer)
+/// A `StringProcessor` can be implemented for a tokenizer (lexer)
 /// which converts some text expression into a list of tokens.
 pub trait StringProcessor {
   fn process(self: &mut Self, line: &str) -> &Tokens;
@@ -122,10 +122,10 @@ pub trait StringProcessor {
 
 /// Transforms list of tokens into another list of tokens.
 ///
-/// A TokensProcessor can be implemented for a parser which
+/// A `TokensProcessor` can be implemented for a parser which
 /// takes a list of tokens in some order and transform them
 /// into list of tokens in the other form (like infix to
-/// RPN notation). Furthermore a TokensProcessor can be used
+/// RPN notation). Furthermore a `TokensProcessor` can be used
 /// to extend tokenizer with knowledge of new tokens, as it
 /// can transform unknown tokens to known ones.
 pub trait TokensProcessor {
@@ -134,7 +134,7 @@ pub trait TokensProcessor {
 
 /// Evaluates list of tokens into a single Polynomial value.
 ///
-/// A TokensReducer takes a list of tokens in some expected
+/// A `TokensReducer` takes a list of tokens in some expected
 /// arrangement and evaluates them into a single Polynomial
 /// value. It can be used for implementation of various
 /// computational languages (such as the scientific calcualtor).
@@ -232,18 +232,17 @@ impl Tokens {
   /// assert_eq!(tokens.identifiers, ["foo", "bar"]);
   /// ```
   #[inline]
-  pub fn push_identifier(&mut self, position: usize, value: &String) {
+  pub fn push_identifier(&mut self, position: usize, value: &str) {
     let idx = if let Some(&id) = self.lookup.get(value) {
       id
+    } else
+    if let Some(&id) = self.lookup.get(&value.to_lowercase()) {
+      let _ = self.lookup.insert(value.to_owned(), id);
+      id
     } else {
-      if let Some(&id) = self.lookup.get(&value.to_lowercase()) {
-        let _ = self.lookup.insert(value.clone(), id);
-        id
-      } else {
-        let _ = self.lookup.insert(value.to_lowercase(), self.identifiers.len());
-        self.identifiers.push(value.to_lowercase());
-        self.identifiers.len() - 1
-      }
+      let _ = self.lookup.insert(value.to_lowercase(), self.identifiers.len());
+      self.identifiers.push(value.to_lowercase());
+      self.identifiers.len() - 1
     };
     self.push(position, Token::Identifier(idx));
   }

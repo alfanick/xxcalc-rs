@@ -25,6 +25,8 @@ mod benchmarks {
     let mut parser = PolynomialParser::default().parser;
     let evaluator = PolynomialEvaluator::default().evaluator;
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
+
     b.iter(|| {
       (0..10).fold(0.0, |a, _| {
         let tokens = tokenizer.process(add_sub_r);
@@ -46,6 +48,7 @@ mod benchmarks {
     let mut parser = PolynomialParser::default().parser;
     let evaluator = PolynomialEvaluator::default().evaluator;
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
     b.iter(|| {
       (0..10).fold(0.0, |a, _| {
         let tokens = tokenizer.process(add_sub_r);
@@ -65,6 +68,7 @@ mod benchmarks {
     let mut parser = PolynomialParser::default().parser;
     let evaluator = PolynomialEvaluator::default().evaluator;
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
     b.iter(|| {
       (0..10).fold(0.0, |a, _| {
         let tokens = tokenizer.process(add_sub_r);
@@ -80,6 +84,7 @@ mod benchmarks {
   fn bench_calculation_without_arena(b: &mut Bencher) {
     let add_sub_r = &add_sub_gen(100000);
 
+    b.bytes = add_sub_r.len() as u64 * 10 * 4;
     b.iter(|| {
       (0..10).fold(0.0, |a, _| a + PolynomialCalculator.process(add_sub_r).unwrap()[0])
     });

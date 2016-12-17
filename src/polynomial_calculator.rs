@@ -1,4 +1,4 @@
-//! Defines a PolynomialCalculator with common arithmetic operations, functions
+//! Defines a `PolynomialCalculator` with common arithmetic operations, functions
 //! and constants already defined.
 //!
 //! It supports various arithmetical operations, functions and some constants by
@@ -17,20 +17,20 @@
 //! is a constant defining a polynomial with coefficient one for the power of one).
 //!
 //! In order to make the polynomial calculator reusable it is split into two
-//! functional units: a PolynomialParser and a PolynomialEvaluator. A PolynomialParser,
+//! functional units: a `PolynomialParser` and a `PolynomialEvaluator`. A `PolynomialParser`,
 //! extends basic infix parser with knowledge of basic arithmetic operators (`+`, `-`,
 //! `*`, `/`, `^`) with correct precedence (priority) and associativity. One can use
-//! this parser to implement the other ones. Then, a PolynomialEvaluator is defined,
+//! this parser to implement the other ones. Then, a `PolynomialEvaluator` is defined,
 //! which extends a basic RPN evaluator with functions handling these operators and
 //! handlers for `log`, `log10` and `bind` functions, as well as the common constants.
 //!
 //! The function handlers are available in the public module, so one can reuse them
 //! when implementing a custom evaluator. These handlers try to do operations in-place
-//! where possible, as a result no additional instances of Polynomial are created.
+//! where possible, as a result no additional instances of `Polynomial` are created.
 //!
 //! # Examples
 //!
-//! A PolynomialCalculator provides an easy way to integrate the calculator into
+//! A `PolynomialCalculator` provides an easy way to integrate the calculator into
 //! your project. It simply takes a string expression and returns evaluated value.
 //!
 //! ```
@@ -44,7 +44,7 @@
 //! ```
 //!
 //! However, the highest performance can be obtained by using a tokenizer, parser and
-//! evaluator directly. A PolynomialCalculator creates a new instance of these for each
+//! evaluator directly. A `PolynomialCalculator` creates a new instance of these for each
 //! evaluation, which wastes buffers and requires multiple allocations from the operating
 //! system.
 //!
@@ -74,8 +74,8 @@ use parser::{Parser, Operator, OperatorAssociativity};
 use polynomial::Polynomial;
 use std::f64::consts::{PI, E};
 
-/// PolynomialCalculator is a calculator using a PolynomialParser and a PolynomialEvaluator
-/// to provide multiple default operations.
+/// `PolynomialCalculator` is a calculator using a `PolynomialParser` and
+/// a `PolynomialEvaluator` to provide multiple default operations.
 ///
 /// This calculator supports addition `+`, subtraction `-`, multiplication `*`,
 /// division `/` and exponentiation `^` operators, `log(number, base)`,
@@ -83,8 +83,8 @@ use std::f64::consts::{PI, E};
 /// symbols and `pi` and `e` constants.
 ///
 /// While usage of the calculator is the easiest way of embedding computation
-/// engine into your program, please note that a Tokenizer, PolynomialParser and
-/// PolynomialEvaluator is created with each call, which requires reallocation
+/// engine into your program, please note that a `Tokenizer`, `PolynomialParser` and
+/// `PolynomialEvaluator` is created with each call, which requires reallocation
 /// of memory.
 ///
 /// # Examples
@@ -105,13 +105,13 @@ impl Calculator<Tokenizer, PolynomialParser, PolynomialEvaluator> for Polynomial
 
 }
 
-/// Extends Evaluator with handlers for common operators and functions.
+/// Extends `Evaluator` with handlers for common operators and functions.
 pub struct PolynomialEvaluator {
   /// Underlying evaluator (one can use it to extend it furthermore)
   pub evaluator: Evaluator
 }
 
-/// Creates PolynomialEvaluator and extends the basic Evaluator.
+/// Creates `PolynomialEvaluator` and extends the basic Evaluator.
 ///
 /// Handlers for common arithmetic operations, functions and some constants
 /// are registered to the underlying evaluator.
@@ -141,23 +141,23 @@ impl Default for PolynomialEvaluator {
   }
 }
 
-/// Allows usage of PolynomialEvaluator as common TokensReducer
+/// Allows usage of `PolynomialEvaluator` as common `TokensReducer`
 impl TokensReducer for PolynomialEvaluator {
   fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
     self.evaluator.process(tokens)
   }
 }
 
-/// Extends Parser with common arithmetic operators with correct precedence
+/// Extends `Parser` with common arithmetic operators with correct precedence
 /// and associativity.
 pub struct PolynomialParser {
   /// Underlying parser (one can use it to extend it furthermore)
   pub parser: Parser
 }
 
-/// Creates PolynomialParser and extends basic Parser.
+/// Creates `PolynomialParser` and extends basic `Parser`.
 ///
-/// Common arithmetic operators are registered with the Parser.
+/// Common arithmetic operators are registered with the `Parser`.
 impl Default for PolynomialParser {
   fn default() -> PolynomialParser {
     let mut parser = Parser::default();
@@ -174,7 +174,7 @@ impl Default for PolynomialParser {
   }
 }
 
-/// Allows usage of PolynomialParser as common TokensProcessor
+/// Allows usage of `PolynomialParser` as common `TokensProcessor`
 impl TokensProcessor for PolynomialParser {
   fn process(&mut self, tokens: &Tokens) -> Result<&Tokens, ParsingError> {
     self.parser.process(tokens)
@@ -184,10 +184,10 @@ impl TokensProcessor for PolynomialParser {
 /// Implementations of function handlers used in operators and functions.
 ///
 /// This module is public, so when you are writing another evaluator, but
-/// it does not extend PolynomialEvaluator, you can reuse these functions
+/// it does not extend `PolynomialEvaluator`, you can reuse these functions
 /// as handlers for some of the common operations.
 ///
-/// Operations that are directly defined on the Polynomial (such as addition,
+/// Operations that are directly defined on the `Polynomial` (such as addition,
 /// subtraction, multiplication and division), avoid cloning by using
 /// the assignment with operation, thus optimizing memory usage.
 pub mod functions {
@@ -225,7 +225,7 @@ pub mod functions {
   ///
   /// # Errors
   ///
-  /// It will return a wrapped PolynomialError when a degree of divident is
+  /// It will return a wrapped `PolynomialError` when a degree of divident is
   /// smaller than a degree of divisor or when a divident is non-constant
   /// polynomial, while a divisor is a zero.
   pub fn division(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
@@ -255,7 +255,7 @@ pub mod functions {
   ///
   /// # Errors
   ///
-  /// It will return a wrapped PolynomialError::NonConstantError when any of the
+  /// It will return a wrapped `PolynomialError::NonConstantError` when any of the
   /// arguments is not a constant polynomial (a polynomial of degree zero).
   pub fn log(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(Polynomial::constant(try!(args[0].as_f64()).log(try!(args[1].as_f64()))))
@@ -274,7 +274,7 @@ pub mod functions {
   ///
   /// # Errors
   ///
-  /// It will return a wrapped PolynomialError::NonConstantError when the argument
+  /// It will return a wrapped `PolynomialError::NonConstantError` when the argument
   /// is not a constant polynomial (a polynomial of degree zero).
   pub fn log10(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(Polynomial::constant(try!(args[0].as_f64()).log10()))
@@ -296,7 +296,7 @@ pub mod functions {
   ///
   /// # Errors
   ///
-  /// It will return a wrapped PolynomialError::NonConstantError when the second
+  /// It will return a wrapped `PolynomialError::NonConstantError` when the second
   /// argument is not a constant polynomial (a polynomial of degree zero).
   pub fn bind(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     Ok(args[0].bind(try!(args[1].as_f64())))
@@ -311,11 +311,11 @@ pub mod functions {
   ///
   /// # Errors
   ///
-  /// It will return a NonConstantExponent error when the exponient is not
+  /// It will return a `NonConstantExponent` error when the exponient is not
   /// a constant polynomial. Performing such operation would result in a
   /// non-polynomial result.
   ///
-  /// It will return a NonNaturalExponent error when the exponient is not
+  /// It will return a `NonNaturalExponent` error when the exponient is not
   /// a natural number and the base is not a constant polynomial. Performing
   /// such operation would result in a non-polynomial result.
   pub fn exponentiation(mut args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {

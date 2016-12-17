@@ -1,25 +1,25 @@
-//! Calculator is an easy to use generic method of evaluating string expressions.
+//! `Calculator` is an easy to use generic method of evaluating string expressions.
 
 use super::*;
 use polynomial::Polynomial;
 
-/// CalculationError wraps parsing and evaluation errors
+/// `CalculationError` wraps parsing and evaluation errors
 #[derive(Debug, PartialEq)]
 pub enum CalculationError {
-  /// ParsingError returned from TokensProcessor
+  /// `ParsingError` returned from `TokensProcessor`
   ParsingError(ParsingError),
-  /// EvaluationError returned from TokensReducer
+  /// `EvaluationError` returned from `TokensReducer`
   EvaluationError(EvaluationError)
 }
 
-/// Wraps ParsingError in CalculationError
+/// Wraps `ParsingError` in `CalculationError`
 impl From<ParsingError> for CalculationError {
   fn from(e: ParsingError) -> CalculationError {
     CalculationError::ParsingError(e)
   }
 }
 
-/// Wraps EvaluationError in CalculationError
+/// Wraps `EvaluationError` in `CalculationError`
 impl From<EvaluationError> for CalculationError {
   fn from(e: EvaluationError) -> CalculationError {
     CalculationError::EvaluationError(e)
@@ -27,11 +27,11 @@ impl From<EvaluationError> for CalculationError {
 }
 
 /// Calculator is the easiest way of evaluating string expressions
-/// into a Polynomial value.
+/// into a `Polynomial` value.
 ///
 /// A struct which is a calculator (implements this trait) can easily
-/// perform evaluation using given StringProcessor, TokensProcessor
-/// and TokensReducer.
+/// perform evaluation using given `StringProcessor`, `TokensProcessor`
+/// and `TokensReducer`.
 pub trait Calculator<T, P, E>
   where T: StringProcessor + Default,
         P: TokensProcessor + Default,

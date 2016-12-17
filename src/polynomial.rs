@@ -9,7 +9,7 @@ use self::smallvec::SmallVec;
 /// to natural-numbered powers of the variable x. As coefficients are represented
 /// as continous vector, storing polynomials of high degree, but with most
 /// terms empty is quite expensive (`x^1023` makes vector of size 1024). A
-/// SmallVec is used, so coefficients up to power of 3 are stored on the stack.
+/// `SmallVec` is used, so coefficients up to power of 3 are stored on the stack.
 ///
 /// As one can imagine `x^3.14` is not a polynomial, while `3.14x^2+2` is a
 /// polynomial.
@@ -31,7 +31,7 @@ pub struct Polynomial {
 /// Coefficients type
 type SVec = SmallVec<[f64; 4]>;
 
-/// Resizes SmallVector and initializes it with zeros
+/// Resizes `SmallVec` and initializes it with zeros
 #[inline(always)]
 fn fill_with_zeros(vec: &mut SVec, new_size: usize) {
   if vec.len() < new_size {
@@ -689,7 +689,7 @@ impl MulAssign<f64> for Polynomial {
 /// some errors may be returned.
 ///
 /// However division by zero of non-constant polynomial will result in
-/// DivisionByZero error, as such operation is not defined.
+/// `DivisionByZero` error, as such operation is not defined.
 ///
 /// ```
 /// # use xxcalc::polynomial::Polynomial;
@@ -702,7 +702,7 @@ impl MulAssign<f64> for Polynomial {
 /// assert_eq!(c.unwrap_err(), PolynomialError::DivisionByZero);
 /// ```
 ///
-/// A DividentDegreeMismatch error is returned when divident degree is
+/// A `DividentDegreeMismatch` error is returned when divident degree is
 /// smaller than divisor degree, as performing such operation would
 /// result in nonpolynomial result.
 ///
