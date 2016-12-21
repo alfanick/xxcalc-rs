@@ -192,22 +192,12 @@ impl TokensProcessor for Parser {
 
     while let Some(&(position, ref token)) = iter.next() {
       match *token {
-        Token::BracketOpening => stack.push((position, token.clone())),
-        Token::Number(_) => self.output.tokens.push((position, token.clone())),
+        Token::Number(_) => self.output.tokens.push((position, token.to_owned())),
         Token::Identifier(_) => {
           if let Some(&&(_, Token::BracketOpening)) = iter.peek() {
-            stack.push((position, token.clone()));
+            stack.push((position, token.to_owned()));
           } else {
-            self.output.tokens.push((position, token.clone()));
-          }
-        },
-        Token::Separator => {
-          while !stack.is_empty() {
-            match stack.last() {
-              Some(&(_, Token::BracketOpening)) => break,
-              Some(_) => self.output.tokens.push(stack.pop().unwrap()),
-              _ => break
-            }
+            self.output.tokens.push((position, token.to_owned()));
           }
         },
         Token::Operator(name) => {
@@ -224,12 +214,13 @@ impl TokensProcessor for Parser {
             }
           }
 
-          if let Some(_) = self.operators.get(&name) {
-            stack.push((position, token.clone()));
+          if self.operators.get(&name).is_some() {
+            stack.push((position, token.to_owned()));
           } else {
             return Err(ParsingError::UnknownOperator(name, position));
           }
         },
+        Token::BracketOpening => stack.push((position, token.to_owned())),
         Token::BracketClosing => {
           let mut found = false;
 
@@ -248,7 +239,16 @@ impl TokensProcessor for Parser {
             return Err(ParsingError::MissingBracket(position));
           }
         },
-        ref token => return Err(ParsingError::UnexpectedToken(token.clone(), position))
+        Token::Separator => {
+          while !stack.is_empty() {
+            match stack.last() {
+              Some(&(_, Token::BracketOpening)) => break,
+              Some(_) => self.output.tokens.push(stack.pop().unwrap()),
+              _ => break
+            }
+          }
+        },
+        ref token => return Err(ParsingError::UnexpectedToken(token.to_owned(), position))
       }
     }
 
