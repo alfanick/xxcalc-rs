@@ -341,7 +341,7 @@ impl Evaluator {
   /// assert_eq!(result.unwrap_err(), EvaluationError::ConflictingName(String::from("foo")));
   /// ```
   pub fn register_function(&mut self, name: &str, function: Function) -> Result<Option<Function>, EvaluationError> {
-    if let Some(_) = self.constants.get(name) {
+    if self.constants.contains_key(name) {
       return Err(EvaluationError::ConflictingName(name.to_string()));
     }
 
@@ -401,7 +401,7 @@ impl Evaluator {
   /// assert_eq!(result.unwrap_err(), EvaluationError::ConflictingName(String::from("foo")));
   /// ```
   pub fn register_constant(&mut self, name: &str, constant: Polynomial) -> Result<Option<Polynomial>, EvaluationError> {
-    if let Some(_) = self.functions.get(name) {
+    if self.functions.contains_key(name) {
       return Err(EvaluationError::ConflictingName(name.to_string()));
     }
 
@@ -411,13 +411,13 @@ impl Evaluator {
   #[inline(always)]
   fn call_function(&self, name: &str, position: usize, stack: &mut Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     if let Some(function) = self.functions.get(name) {
-      if stack.len() < function.arity {
-        Err(EvaluationError::ArgumentMissing(name.to_owned(), function.arity, position))
-      } else {
+      if stack.len() >= function.arity {
         let stack_len = stack.len();
         let args: Vec<Polynomial> = stack.split_off(stack_len - function.arity);
 
         (function.handle)(args)
+      } else {
+        Err(EvaluationError::ArgumentMissing(name.to_owned(), function.arity, position))
       }
     } else {
       Err(EvaluationError::UnknownSymbol(name.to_owned(), position))
