@@ -201,7 +201,7 @@ impl TokensProcessor for Parser {
           }
         },
         Token::Operator(name) => {
-          while !stack.is_empty() {
+          loop {
             match stack.last() {
               Some(&(_, Token::Operator(_))) | Some(&(_, Token::Identifier(_))) => {
                 if self.lower_precedence(&token, &stack.last().unwrap().1) {
@@ -214,7 +214,7 @@ impl TokensProcessor for Parser {
             }
           }
 
-          if self.operators.get(&name).is_some() {
+          if self.operators.contains_key(&name) {
             stack.push((position, token.to_owned()));
           } else {
             return Err(ParsingError::UnknownOperator(name, position));
@@ -224,13 +224,14 @@ impl TokensProcessor for Parser {
         Token::BracketClosing => {
           let mut found = false;
 
-          while !stack.is_empty() {
+          loop {
             match stack.last() {
               Some(&(_, Token::BracketOpening)) => {
                 found = true;
                 stack.pop();
                 break;
               },
+              None => break,
               _ => self.output.tokens.push(stack.pop().unwrap())
             }
           }
@@ -240,11 +241,11 @@ impl TokensProcessor for Parser {
           }
         },
         Token::Separator => {
-          while !stack.is_empty() {
+          loop {
             match stack.last() {
               Some(&(_, Token::BracketOpening)) => break,
               Some(_) => self.output.tokens.push(stack.pop().unwrap()),
-              _ => break
+              None => break
             }
           }
         },
@@ -252,11 +253,11 @@ impl TokensProcessor for Parser {
       }
     }
 
-    while !stack.is_empty() {
+    loop {
       match stack.last() {
         Some(&(position, Token::BracketOpening)) => return Err(ParsingError::MissingBracket(position)),
         Some(_) => self.output.tokens.push(stack.pop().unwrap()),
-        _ => unreachable!()
+        None => break
       }
     }
 

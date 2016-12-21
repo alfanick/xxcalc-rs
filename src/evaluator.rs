@@ -409,10 +409,10 @@ impl Evaluator {
   }
 
   #[inline(always)]
-  fn call_function(&self, name: &String, position: usize, stack: &mut Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
+  fn call_function(&self, name: &str, position: usize, stack: &mut Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
     if let Some(function) = self.functions.get(name) {
       if stack.len() < function.arity {
-        Err(EvaluationError::ArgumentMissing(name.clone(), function.arity, position))
+        Err(EvaluationError::ArgumentMissing(name.to_owned(), function.arity, position))
       } else {
         let stack_len = stack.len();
         let args: Vec<Polynomial> = stack.split_off(stack_len - function.arity);
@@ -420,7 +420,7 @@ impl Evaluator {
         (function.handle)(args)
       }
     } else {
-      Err(EvaluationError::UnknownSymbol(name.clone(), position))
+      Err(EvaluationError::UnknownSymbol(name.to_owned(), position))
     }
   }
 }
