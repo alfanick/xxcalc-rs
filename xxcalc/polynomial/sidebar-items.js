@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["PolynomialError","Error resulting from operations on polynomials"]],"struct":[["Polynomial","Polynomial struct represents a mathematical concept of polynomials."]]});

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Evaluator` struct in crate `xxcalc`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Evaluator">
+
+    <title>xxcalc::evaluator::Evaluator - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>xxcalc</a>::<wbr><a href='index.html'>evaluator</a></p><script>window.sidebarCurrent = {name: 'Evaluator', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>xxcalc</a>::<wbr><a href='index.html'>evaluator</a>::<wbr><a class='struct' href=''>Evaluator</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-380' class='srclink' href='../../src/xxcalc/src/evaluator.rs.html#105-108' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Evaluator { /* fields omitted */ }</pre><div class='docblock'><p>Evaluator takes <code>Tokens</code> in Reverse Polish Notation and evaluates
+them using defined functions and constants into a sngle Polynomial
+value.</p>
+
+<p>Evaluator stores registered functions (with their arity) between
+multiple executions. There is no difference between an operator
+and a function call. Additionaly constants can be registered.
+Both identifiers are kept in binary tree, so their retrieval
+is relatively quick. Symbols used for functions or constants
+must be unique, a function with no arguments can replace a
+constant, however its value may change.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>Parser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+<span class='ident'>parser</span>.<span class='ident'>register_operator</span>(<span class='string'>&#39;+&#39;</span>, <span class='ident'>Operator</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>OperatorAssociativity</span>::<span class='ident'>Left</span>));
+<span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;+&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>2</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='comment'>// not a production code, just a sample</span>
+  <span class='prelude-val'>Ok</span>(<span class='ident'>args</span>[<span class='number'>0</span>].<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>args</span>[<span class='number'>1</span>].<span class='ident'>clone</span>())
+})));
+
+<span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2+2&quot;</span>)).<span class='ident'>unwrap</span>();
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>4.0</span>)));<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<h1 id='extending' class='section-header'><a href='#extending'>Extending</a></h1>
+<p>One can directly register functions or constants with the evaluator,
+or embed the evalutor in another <code>TokensReducer</code> which will add these
+handlers by default.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../xxcalc/evaluator/struct.Evaluator.html' title='xxcalc::evaluator::Evaluator'>Evaluator</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-400' class='srclink' href='../../src/xxcalc/src/evaluator.rs.html#276-426' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../xxcalc/evaluator/struct.Evaluator.html' title='xxcalc::evaluator::Evaluator'>Evaluator</a></code></span></h4>
+<div class='docblock'><p>Creates an empty Evaluator with no defined symbols.</p>
+</div><h4 id='method.register_function' class='method'><span id='register_function.v' class='invisible'><code>fn <a href='#method.register_function' class='fnname'>register_function</a>(&amp;mut self, name: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, function: <a class='struct' href='../../xxcalc/evaluator/struct.Function.html' title='xxcalc::evaluator::Function'>Function</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../xxcalc/evaluator/struct.Function.html' title='xxcalc::evaluator::Function'>Function</a>&gt;,&nbsp;<a class='enum' href='../../xxcalc/enum.EvaluationError.html' title='xxcalc::EvaluationError'>EvaluationError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Registers a function with its name.</p>
+
+<p>Each function (or an operator) must have a registered function
+handle which takes arguments (or operands) and evaluate them
+into a single value Polynomial.</p>
+
+<p>If a function with the same name has been registered, previously
+registered function is returned, however the name of the function
+cannot collide with an already registered constant.</p>
+
+<h1 id='examples-1' class='section-header'><a href='#examples-1'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>Parser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+<span class='ident'>parser</span>.<span class='ident'>register_operator</span>(<span class='string'>&#39;+&#39;</span>, <span class='ident'>Operator</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>OperatorAssociativity</span>::<span class='ident'>Left</span>));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2+2&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>), <span class='prelude-val'>Err</span>(<span class='ident'>EvaluationError</span>::<span class='ident'>UnknownSymbol</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;+&quot;</span>), <span class='number'>1</span>)));
+}
+
+<span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;+&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>2</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='comment'>// not a production code, just a sample</span>
+  <span class='prelude-val'>Ok</span>(<span class='ident'>args</span>[<span class='number'>0</span>].<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>args</span>[<span class='number'>1</span>].<span class='ident'>clone</span>())
+})));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2+2&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>4.0</span>)));
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<h1 id='errors' class='section-header'><a href='#errors'>Errors</a></h1>
+<p>A ConflictingName error is returned when name of the function collides
+with previously registered constant.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+<span class='ident'>evaluator</span>.<span class='ident'>register_constant</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>42.0</span>));
+<span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='prelude-val'>Ok</span>(<span class='ident'>args</span>[<span class='number'>0</span>].<span class='ident'>clone</span>())
+})));
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>result</span>.<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>ConflictingName</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;foo&quot;</span>)));<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+</div><h4 id='method.register_constant' class='method'><span id='register_constant.v' class='invisible'><code>fn <a href='#method.register_constant' class='fnname'>register_constant</a>(&amp;mut self, name: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, constant: <a class='struct' href='../../xxcalc/polynomial/struct.Polynomial.html' title='xxcalc::polynomial::Polynomial'>Polynomial</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../xxcalc/polynomial/struct.Polynomial.html' title='xxcalc::polynomial::Polynomial'>Polynomial</a>&gt;,&nbsp;<a class='enum' href='../../xxcalc/enum.EvaluationError.html' title='xxcalc::EvaluationError'>EvaluationError</a>&gt;</code></span></h4>
+<div class='docblock'><p>Registers a Polynomial constant with its name.</p>
+
+<p>An identifier with given name is replaced with the constant value
+when it is encountered during evaluation process.
+If a constant with the same name has been registered, previously
+registered constant is returned, however the name of the constant
+cannot collide with an already registered function.</p>
+
+<h1 id='examples-2' class='section-header'><a href='#examples-2'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>Parser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;foo&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>), <span class='prelude-val'>Err</span>(<span class='ident'>EvaluationError</span>::<span class='ident'>UnknownSymbol</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;foo&quot;</span>), <span class='number'>0</span>)));
+}
+
+<span class='ident'>evaluator</span>.<span class='ident'>register_constant</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>42.0</span>));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;foo&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>42.0</span>)));
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<h1 id='errors-1' class='section-header'><a href='#errors-1'>Errors</a></h1>
+<p>A ConflictingName error is returned when name of the constant collides
+with previously registered function.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+<span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='prelude-val'>Ok</span>(<span class='ident'>args</span>[<span class='number'>0</span>].<span class='ident'>clone</span>())
+})));
+<span class='kw'>let</span> <span class='ident'>result</span> <span class='op'>=</span> <span class='ident'>evaluator</span>.<span class='ident'>register_constant</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>42.0</span>));
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>result</span>.<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>ConflictingName</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;foo&quot;</span>)));<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../xxcalc/evaluator/struct.Evaluator.html' title='xxcalc::evaluator::Evaluator'>Evaluator</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-383' class='srclink' href='../../src/xxcalc/src/evaluator.rs.html#115-119' title='goto source code'>[src]</a></span></h3>
+<div class='docblock'><p>Creates a new default Evaluator.</p>
+
+<p>Such evaluator is not aware of any functions or constants.
+One must define functions before being able to evaluate
+operators or other calls.</p>
+</div><div class='impl-items'><h4 id='method.default' class='method'><span id='default.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../xxcalc/evaluator/struct.Evaluator.html' title='xxcalc::evaluator::Evaluator'>Evaluator</a></code></span></h4>
+<div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../xxcalc/trait.TokensReducer.html' title='xxcalc::TokensReducer'>TokensReducer</a> for <a class='struct' href='../../xxcalc/evaluator/struct.Evaluator.html' title='xxcalc::evaluator::Evaluator'>Evaluator</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-385' class='srclink' href='../../src/xxcalc/src/evaluator.rs.html#242-274' title='goto source code'>[src]</a></span></h3>
+<div class='docblock'><p>This is a main processing unit in the evaluator. It takes
+tokens in Reverse Polish Notation and evaluates them into
+a single <code>Polynomial</code> value.</p>
+
+<p>Before evaluating functions, operators or constants they
+must be registered, as evaluator has no knowledge what to
+do with the arguments and how to reduce them into a single
+value. Operators and functions are actualy the same thing,
+except that operators always require two arguments.</p>
+
+<p>A traditional stack based postfix evaluation algorithm is
+used (it computes the result in a linear time). Numbers and
+constants are put on a stack, until a operator or a function
+call is required. Such call takes off appropriate number of
+arguments from the stack and calls the function handler
+with these arguments. Result of such evaluation is put back
+on the stack. In the end last value on the stack is returned
+as the result of the evaluation.</p>
+
+<h1 id='errors-2' class='section-header'><a href='#errors-2'>Errors</a></h1>
+<p>A <code>PolynomialError</code> is returned when underlying function handler returns
+an error (it may happen as a result of converting non constant to float,
+division by zero of polynomials or division of polynomials with wrong
+degree).</p>
+
+<p>A <code>MultipleExpressions</code> error is returned when there are multiple tokens
+left on the stack. It is causes by providing to many arguments to a
+function or giving too many expressions.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>Parser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2, 2&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>MultipleExpressions</span>);
+}
+
+<span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>42.0</span>))
+})));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;foo(2, 2)&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>MultipleExpressions</span>);
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<p>An <code>ArgumentMissing</code> error is returned when number of tokens on a stack
+is less than required arity of given functions. The error contains
+required arity and position of error.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>Parser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+<span class='ident'>parser</span>.<span class='ident'>register_operator</span>(<span class='string'>&#39;+&#39;</span>, <span class='ident'>Operator</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>OperatorAssociativity</span>::<span class='ident'>Left</span>));
+<span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;+&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>2</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='comment'>// not a production code, just a sample</span>
+  <span class='prelude-val'>Ok</span>(<span class='ident'>args</span>[<span class='number'>0</span>].<span class='ident'>clone</span>() <span class='op'>+</span> <span class='ident'>args</span>[<span class='number'>1</span>].<span class='ident'>clone</span>())
+})));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2+2+&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>ArgumentMissing</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;+&quot;</span>), <span class='number'>2</span>, <span class='number'>3</span>));
+}
+
+<span class='ident'>evaluator</span>.<span class='ident'>register_function</span>(<span class='string'>&quot;foo&quot;</span>, <span class='ident'>Function</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='op'>|</span><span class='ident'>args</span><span class='op'>|</span> {
+  <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>42.0</span>))
+})));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;foo()&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>ArgumentMissing</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;foo&quot;</span>), <span class='number'>1</span>, <span class='number'>0</span>));
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<p>An <code>UnknownSymbol</code> error is returned when an operator or identifier token is
+encountered with a name of unregistered function or constant. Each operator,
+function and constant need to be registered before it can be evaluated.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>Parser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>Evaluator</span>::<span class='ident'>default</span>();
+
+<span class='ident'>parser</span>.<span class='ident'>register_operator</span>(<span class='string'>&#39;+&#39;</span>, <span class='ident'>Operator</span>::<span class='ident'>new</span>(<span class='number'>1</span>, <span class='ident'>OperatorAssociativity</span>::<span class='ident'>Left</span>));
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2+2&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>UnknownSymbol</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;+&quot;</span>), <span class='number'>1</span>));
+}
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;foo(1)&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>UnknownSymbol</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;foo&quot;</span>), <span class='number'>0</span>));
+}
+
+{
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;pi&quot;</span>)).<span class='ident'>unwrap</span>();
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>).<span class='ident'>unwrap_err</span>(), <span class='ident'>EvaluationError</span>::<span class='ident'>UnknownSymbol</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='string'>&quot;pi&quot;</span>), <span class='number'>0</span>));
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+</div><div class='impl-items'><h4 id='method.process' class='method'><span id='process.v' class='invisible'><code>fn <a href='../../xxcalc/trait.TokensReducer.html#tymethod.process' class='fnname'>process</a>(&amp;self, tokens: &amp;<a class='struct' href='../../xxcalc/struct.Tokens.html' title='xxcalc::Tokens'>Tokens</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../xxcalc/polynomial/struct.Polynomial.html' title='xxcalc::polynomial::Polynomial'>Polynomial</a>,&nbsp;<a class='enum' href='../../xxcalc/enum.EvaluationError.html' title='xxcalc::EvaluationError'>EvaluationError</a>&gt;</code></span></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "xxcalc";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

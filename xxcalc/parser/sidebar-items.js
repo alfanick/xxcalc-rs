@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["OperatorAssociativity","Defines operator associativity."]],"struct":[["Operator","Stores operator precedence and its associativity."],["Parser","`Parser` takes `Tokens` in infix form and transforms them into Reverse Polish Notation. After such transformation tokens can be processed by `TokensReducer`."]]});

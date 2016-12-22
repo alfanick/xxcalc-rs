@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `xxcalc` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, xxcalc">
+
+    <title>xxcalc - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'xxcalc', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>xxcalc</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-0' class='srclink' href='../src/xxcalc/src/lib.rs.html#1-311' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p><code>xxcalc</code> is a crate which provides an embeddable floating-point
+polynomial calculator and linear solver.</p>
+
+<p>You can use <code>xxcalc</code> to embed mathematical expression evaluator
+in your own programs. By default the calculator provides addition <code>+</code>,
+subtraction <code>-</code>, multiplication <code>*</code>, division <code>/</code> and exponentation <code>^</code>
+operators. Some functions such as <code>log</code> and <code>log10</code> are implemented,
+as well as <code>pi</code> and <code>e</code> constants. This is a polynomial calculator, so
+you can perform arithmetic operations on polynomials (using <code>x</code> symbol
+by default) - a simple floating-point number is just a special case of
+a polynomial (the constant polynomial, polynomial of degree zero).</p>
+
+<p>Furthermore the crate is well structurized and documented - you can use
+pieces it provides to create your own custom solutions (you can use or change
+a tokenizer, parser and evaluator however you want). Look at implementations
+of <code>PolynomialParser</code>, <code>LinearSolverParser</code>, <code>PolynomialEvaluator</code> or
+<code>LinearSolverEvaluator</code> to see how to extend default implementations.</p>
+
+<p>With the crate a <code>xxcalc</code> binary is provided which can be used as a
+standalone CLI calculator (which can be replacement for <code>bc</code> command).
+If the crate is installed with a feature &quot;interactive&quot; enabled, a history
+of commands is enabled.</p>
+
+<p>Whole library is meticulously tested, use <code>cargo test</code> to run unit tests
+(including doc examples), <code>cargo bench</code> will run simple benchmarks, while
+<code>cargo bench -- --ignored</code> will run more computation-heavy benchmarks.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>You can easily take a <code>LinearSolver</code> or <code>PolynomialCalculator</code> to embed
+mathematical engine inside your programs.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>linear_solver</span>::<span class='ident'>LinearSolver</span>;
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>calculator</span>::<span class='ident'>Calculator</span>;
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>polynomial</span>::<span class='ident'>Polynomial</span>;
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>LinearSolver</span>.<span class='ident'>process</span>(<span class='string'>&quot;2x + 1 = 2(1-x)&quot;</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>0.25</span>)));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>LinearSolver</span>.<span class='ident'>process</span>(<span class='string'>&quot;0.1*-2+4&quot;</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='number'>3.8</span>)));<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<p>Please see documentation for <a href="polynomial_calculator/index.html"><code>PolynomialCalculator</code></a> for more examples.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='calculator/index.html'
+                                  title='xxcalc::calculator'>calculator</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Calculator</code> is an easy to use generic method of evaluating string expressions.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='evaluator/index.html'
+                                  title='xxcalc::evaluator'>evaluator</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Evaluator</code> is a <code>TokensReducer</code>, it takes token in RPN form
+and evaluates its Polynomial value.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='linear_solver/index.html'
+                                  title='xxcalc::linear_solver'>linear_solver</a></td>
+                           <td class='docblock-short'>
+                                <p>Defines a <code>LinearSolver</code> which extends a <code>PolynomialCalculator</code> with
+ability of solving single linear equation.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='parser/index.html'
+                                  title='xxcalc::parser'>parser</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Parser</code> is a <code>TokensProcessor</code>, it takes <code>Tokens</code> in a classical
+infix form and transforms them into Reverse Polish Notation
+form for further evaluation.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='polynomial/index.html'
+                                  title='xxcalc::polynomial'>polynomial</a></td>
+                           <td class='docblock-short'>
+                                <p>Defines Polynomial expression with basic operators on it.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='polynomial_calculator/index.html'
+                                  title='xxcalc::polynomial_calculator'>polynomial_calculator</a></td>
+                           <td class='docblock-short'>
+                                <p>Defines a <code>PolynomialCalculator</code> with common arithmetic operations, functions
+and constants already defined.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='tokenizer/index.html'
+                                  title='xxcalc::tokenizer'>tokenizer</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Tokenizer</code> is a <code>StringProcessor</code>, it takes string expression
+and converts it into Tokens for further processing.</p>
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.Tokens.html'
+                                  title='xxcalc::Tokens'>Tokens</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Tokens</code> is a compound storage for list of tokens with
+their identifiers.</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.EvaluationError.html'
+                                  title='xxcalc::EvaluationError'>EvaluationError</a></td>
+                           <td class='docblock-short'>
+                                <p>An error that occurs during token reduction,
+usually by an evaluator.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.ParsingError.html'
+                                  title='xxcalc::ParsingError'>ParsingError</a></td>
+                           <td class='docblock-short'>
+                                <p>An error that occurs during token processing,
+usually by a parser.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='enum' href='enum.Token.html'
+                                  title='xxcalc::Token'>Token</a></td>
+                           <td class='docblock-short'>
+                                <p><code>Token</code> is a basic unit returned after tokenization using
+a <code>StringProcessor</code>.</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.StringProcessor.html'
+                                  title='xxcalc::StringProcessor'>StringProcessor</a></td>
+                           <td class='docblock-short'>
+                                <p>Transforms text expression into list of tokens.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.TokensProcessor.html'
+                                  title='xxcalc::TokensProcessor'>TokensProcessor</a></td>
+                           <td class='docblock-short'>
+                                <p>Transforms list of tokens into another list of tokens.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='trait' href='trait.TokensReducer.html'
+                                  title='xxcalc::TokensReducer'>TokensReducer</a></td>
+                           <td class='docblock-short'>
+                                <p>Evaluates list of tokens into a single Polynomial value.</p>
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.Identifiers.html'
+                                  title='xxcalc::Identifiers'>Identifiers</a></td>
+                           <td class='docblock-short'>
+                                <p>Vector of unique identifiers.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='type' href='type.TokenList.html'
+                                  title='xxcalc::TokenList'>TokenList</a></td>
+                           <td class='docblock-short'>
+                                <p>List of tokens with their position.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "xxcalc";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

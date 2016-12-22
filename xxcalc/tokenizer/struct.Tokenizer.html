@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Tokenizer` struct in crate `xxcalc`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Tokenizer">
+
+    <title>xxcalc::tokenizer::Tokenizer - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>xxcalc</a>::<wbr><a href='index.html'>tokenizer</a></p><script>window.sidebarCurrent = {name: 'Tokenizer', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>xxcalc</a>::<wbr><a href='index.html'>tokenizer</a>::<wbr><a class='struct' href=''>Tokenizer</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-224' class='srclink' href='../../src/xxcalc/src/tokenizer.rs.html#44-58' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Tokenizer { /* fields omitted */ }</pre><div class='docblock'><p><code>Tokenizer</code> performs the very first step of parsing mathematical
+expression into <code>Tokens</code>. These tokens can be then processed by
+<code>TokensProcessor</code>.</p>
+
+<p><code>Tokenizer</code> is a state machine, which can be reused multiple
+times. Internally it stores a buffer of Tokens, which can
+be reused multiple times without requesting new memory from
+the operating system. If Tokenizer lives long enough this
+behaviour can greatly reduce time wasted on mallocs.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+
+{
+  <span class='kw'>let</span> <span class='ident'>tokens</span> <span class='op'>=</span> <span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;2.0+2&quot;</span>);
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>0</span>], (<span class='number'>0</span>, <span class='ident'>Token</span>::<span class='ident'>Number</span>(<span class='number'>2.0</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>1</span>], (<span class='number'>3</span>, <span class='ident'>Token</span>::<span class='ident'>Operator</span>(<span class='string'>&#39;+&#39;</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>2</span>], (<span class='number'>4</span>, <span class='ident'>Token</span>::<span class='ident'>Number</span>(<span class='number'>2.0</span>)));
+}
+
+{
+  <span class='kw'>let</span> <span class='ident'>tokens</span> <span class='op'>=</span> <span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;x+log10(100)+x&quot;</span>);
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>0</span>], (<span class='number'>0</span>, <span class='ident'>Token</span>::<span class='ident'>Identifier</span>(<span class='number'>0</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>.<span class='ident'>identifiers</span>[<span class='number'>0</span>], <span class='string'>&quot;x&quot;</span>);
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>1</span>], (<span class='number'>1</span>, <span class='ident'>Token</span>::<span class='ident'>Operator</span>(<span class='string'>&#39;+&#39;</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>2</span>], (<span class='number'>2</span>, <span class='ident'>Token</span>::<span class='ident'>Identifier</span>(<span class='number'>1</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>.<span class='ident'>identifiers</span>[<span class='number'>1</span>], <span class='string'>&quot;log10&quot;</span>);
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>3</span>], (<span class='number'>7</span>, <span class='ident'>Token</span>::<span class='ident'>BracketOpening</span>));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>4</span>], (<span class='number'>8</span>, <span class='ident'>Token</span>::<span class='ident'>Number</span>(<span class='number'>100.0</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>5</span>], (<span class='number'>11</span>, <span class='ident'>Token</span>::<span class='ident'>BracketClosing</span>));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>6</span>], (<span class='number'>12</span>, <span class='ident'>Token</span>::<span class='ident'>Operator</span>(<span class='string'>&#39;+&#39;</span>)));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>tokens</span>[<span class='number'>7</span>], (<span class='number'>13</span>, <span class='ident'>Token</span>::<span class='ident'>Identifier</span>(<span class='number'>0</span>)));
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../xxcalc/tokenizer/struct.Tokenizer.html' title='xxcalc::tokenizer::Tokenizer'>Tokenizer</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-230' class='srclink' href='../../src/xxcalc/src/tokenizer.rs.html#66-77' title='goto source code'>[src]</a></span></h3>
+<div class='docblock'><p>Creates a new default Tokenizer.</p>
+
+<p>Such tokenizer is optimized (but not limited) for
+values up to 10 characters and up to 10 tokens.
+However these are default space capacities and they
+can extend dynamically.</p>
+</div><div class='impl-items'><h4 id='method.default' class='method'><span id='default.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../xxcalc/tokenizer/struct.Tokenizer.html' title='xxcalc::tokenizer::Tokenizer'>Tokenizer</a></code></span></h4>
+<div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../xxcalc/trait.StringProcessor.html' title='xxcalc::StringProcessor'>StringProcessor</a> for <a class='struct' href='../../xxcalc/tokenizer/struct.Tokenizer.html' title='xxcalc::tokenizer::Tokenizer'>Tokenizer</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-232' class='srclink' href='../../src/xxcalc/src/tokenizer.rs.html#109-201' title='goto source code'>[src]</a></span></h3>
+<div class='docblock'><p>This is a main processing unit in the tokenizer.
+It takes a string expression and creates a list of
+tokens representing this string using a state machine.</p>
+
+<p>This tokenizer supports floating point numbers in traditional
+and scientific notation (as well as shorthand point notation),
+text identifiers and operators such as <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>
+and <code>=</code>. Parentheses <code>()</code> and comma <code>,</code> are supported too.
+Whitespaces are always skipped, not recognized characters
+are wrapped into Unknown token.</p>
+
+<p>Signed numbers are detected when they cannot be mistaken
+for operators <code>+</code> or <code>-</code>. Implicit multiplication before an
+identifier or a parantheses is replaced with explicit multiplication
+with <code>*</code> operator.</p>
+
+<h1 id='extending' class='section-header'><a href='#extending'>Extending</a></h1>
+<p>New features can be add to tokenizer by either embedding this
+tokenizer into new one and replacing Unknown tokens with some
+other tokens or by implementing a <code>TokensProcessor</code> which takes
+output of this tokenizer and replaces Unknown tokens or some
+combination of tokens with other ones.</p>
+
+<h1 id='state-machine' class='section-header'><a href='#state-machine'>State machine</a></h1>
+<p>Complete, hand-designed state machine used by this <code>StringProcessor</code>
+can be seen in the image below:</p>
+
+<p><img src="http://public.amadeusz.me/documents/tokenizer.svg" alt="Tokenizer State Machine"></p>
+</div><div class='impl-items'><h4 id='method.process' class='method'><span id='process.v' class='invisible'><code>fn <a href='../../xxcalc/trait.StringProcessor.html#tymethod.process' class='fnname'>process</a>(&amp;mut self, line: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; &amp;<a class='struct' href='../../xxcalc/struct.Tokens.html' title='xxcalc::Tokens'>Tokens</a></code></span></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "xxcalc";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

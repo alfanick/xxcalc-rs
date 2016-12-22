@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `polynomial_calculator` mod in crate `xxcalc`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, polynomial_calculator">
+
+    <title>xxcalc::polynomial_calculator - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>xxcalc</a></p><script>window.sidebarCurrent = {name: 'polynomial_calculator', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>xxcalc</a>::<wbr><a class='mod' href=''>polynomial_calculator</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-475' class='srclink' href='../../src/xxcalc/src/polynomial_calculator.rs.html#1-427' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Defines a <code>PolynomialCalculator</code> with common arithmetic operations, functions
+and constants already defined.</p>
+
+<p>It supports various arithmetical operations, functions and some constants by
+default. Operators such as addition <code>+</code>, subtraction <code>-</code>, multiplication <code>*</code>,
+division <code>/</code> and exponentiation <code>^</code> are available on polynomials. Please note
+that a simple floating point numbers (represented using double <code>f64</code> type) are
+supported as well, as these are special case of a polynomial (a constant
+polynomial of a degree zero).</p>
+
+<p>Furthermore functions such as arbitrary base logarithm <code>log(number, base)</code>,
+decimal logarithm <code>log10(number)</code> and evaluation of the polynomial
+<code>bind(polynomial, number)</code> are provided by default too. Symbols such as <code>inf</code>,
+<code>nan</code>, <code>pi</code> and <code>e</code> are defined too.</p>
+
+<p>In order to write polynomials the <code>x</code> symbol must be used (which internally
+is a constant defining a polynomial with coefficient one for the power of one).</p>
+
+<p>In order to make the polynomial calculator reusable it is split into two
+functional units: a <code>PolynomialParser</code> and a <code>PolynomialEvaluator</code>. A <code>PolynomialParser</code>,
+extends basic infix parser with knowledge of basic arithmetic operators (<code>+</code>, <code>-</code>,
+<code>*</code>, <code>/</code>, <code>^</code>) with correct precedence (priority) and associativity. One can use
+this parser to implement the other ones. Then, a <code>PolynomialEvaluator</code> is defined,
+which extends a basic RPN evaluator with functions handling these operators and
+handlers for <code>log</code>, <code>log10</code> and <code>bind</code> functions, as well as the common constants.</p>
+
+<p>The function handlers are available in the public module, so one can reuse them
+when implementing a custom evaluator. These handlers try to do operations in-place
+where possible, as a result no additional instances of <code>Polynomial</code> are created.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>A <code>PolynomialCalculator</code> provides an easy way to integrate the calculator into
+your project. It simply takes a string expression and returns evaluated value.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>polynomial_calculator</span>::<span class='ident'>PolynomialCalculator</span>;
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>calculator</span>::<span class='ident'>Calculator</span>;
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>polynomial</span>::<span class='ident'>Polynomial</span>;
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>PolynomialCalculator</span>.<span class='ident'>process</span>(<span class='string'>&quot;(2+2)*-2&quot;</span>), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='op'>-</span><span class='number'>8.0</span>)));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>PolynomialCalculator</span>.<span class='ident'>process</span>(<span class='string'>&quot;(2+2)*-2&quot;</span>).<span class='ident'>unwrap</span>().<span class='ident'>as_f64</span>().<span class='ident'>unwrap</span>(), <span class='op'>-</span><span class='number'>8.0</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>String</span>::<span class='ident'>from</span>(<span class='ident'>PolynomialCalculator</span>.<span class='ident'>process</span>(<span class='string'>&quot;(x+1)*(-0.13x^18-x^7)&quot;</span>).<span class='ident'>unwrap</span>()), <span class='string'>&quot;-0.13x^19-0.13x^18-x^8-x^7&quot;</span>);<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+
+<p>However, the highest performance can be obtained by using a tokenizer, parser and
+evaluator directly. A <code>PolynomialCalculator</code> creates a new instance of these for each
+evaluation, which wastes buffers and requires multiple allocations from the operating
+system.</p>
+
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>tokenizer</span>::<span class='ident'>Tokenizer</span>;
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>polynomial_calculator</span>::{<span class='ident'>PolynomialParser</span>, <span class='ident'>PolynomialEvaluator</span>};
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::{<span class='ident'>StringProcessor</span>, <span class='ident'>TokensProcessor</span>, <span class='ident'>TokensReducer</span>};
+<span class='kw'>use</span> <span class='ident'>xxcalc</span>::<span class='ident'>polynomial</span>::<span class='ident'>Polynomial</span>;
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tokenizer</span> <span class='op'>=</span> <span class='ident'>Tokenizer</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>parser</span> <span class='op'>=</span> <span class='ident'>PolynomialParser</span>::<span class='ident'>default</span>();
+<span class='kw'>let</span> <span class='ident'>evaluator</span> <span class='op'>=</span> <span class='ident'>PolynomialEvaluator</span>::<span class='ident'>default</span>();
+
+<span class='comment'>// process some input</span>
+<span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>10</span> {
+  <span class='kw'>let</span> <span class='ident'>tokenized</span> <span class='op'>=</span> <span class='ident'>tokenizer</span>.<span class='ident'>process</span>(<span class='string'>&quot;(2+2)*-2&quot;</span>);
+  <span class='kw'>let</span> <span class='ident'>parsed</span> <span class='op'>=</span> <span class='ident'>parser</span>.<span class='ident'>process</span>(<span class='ident'>tokenized</span>);
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>evaluator</span>.<span class='ident'>process</span>(<span class='ident'>parsed</span>.<span class='ident'>unwrap</span>()), <span class='prelude-val'>Ok</span>(<span class='ident'>Polynomial</span>::<span class='ident'>constant</span>(<span class='op'>-</span><span class='number'>8.0</span>)));
+}<a class='test-arrow' target='_blank' href=''>Run</a></pre>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='functions/index.html'
+                                  title='xxcalc::polynomial_calculator::functions'>functions</a></td>
+                           <td class='docblock-short'>
+                                <p>Implementations of function handlers used in operators and functions.</p>
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PolynomialCalculator.html'
+                                  title='xxcalc::polynomial_calculator::PolynomialCalculator'>PolynomialCalculator</a></td>
+                           <td class='docblock-short'>
+                                <p><code>PolynomialCalculator</code> is a calculator using a <code>PolynomialParser</code> and
+a <code>PolynomialEvaluator</code> to provide multiple default operations.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PolynomialEvaluator.html'
+                                  title='xxcalc::polynomial_calculator::PolynomialEvaluator'>PolynomialEvaluator</a></td>
+                           <td class='docblock-short'>
+                                <p>Extends <code>Evaluator</code> with handlers for common operators and functions.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.PolynomialParser.html'
+                                  title='xxcalc::polynomial_calculator::PolynomialParser'>PolynomialParser</a></td>
+                           <td class='docblock-short'>
+                                <p>Extends <code>Parser</code> with common arithmetic operators with correct precedence
+and associativity.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "xxcalc";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["WordAction",""]],"static":[["MAX_LINE","Maximum buffer size for the line read"]],"struct":[["LineBuffer",""]]});

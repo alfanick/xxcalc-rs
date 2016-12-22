@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["solver","Solves a linear equation for a value of `x` (requires two arguments)."]]});
