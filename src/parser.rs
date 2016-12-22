@@ -187,17 +187,17 @@ impl TokensProcessor for Parser {
     let mut stack = TokenList::with_capacity(4);
     let mut iter = tokens.tokens.iter().peekable();
 
-    self.output.tokens.clear();
+    self.output.clear();
     self.output.identifiers = tokens.identifiers.clone();
 
     while let Some(&(position, ref token)) = iter.next() {
       match *token {
-        Token::Number(_) => self.output.tokens.push((position, token.to_owned())),
+        Token::Number(_) => self.output.push(position, token.to_owned()),
         Token::Identifier(_) => {
           if let Some(&&(_, Token::BracketOpening)) = iter.peek() {
             stack.push((position, token.to_owned()));
           } else {
-            self.output.tokens.push((position, token.to_owned()));
+            self.output.push(position, token.to_owned());
           }
         },
         Token::Operator(name) => {
