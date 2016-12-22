@@ -241,7 +241,7 @@ impl Default for Evaluator {
 /// ```
 impl TokensReducer for Evaluator {
   fn process(&self, tokens: &Tokens) -> Result<Polynomial, EvaluationError> {
-    let mut stack: Vec<Polynomial> = Vec::with_capacity(10);
+    let mut stack: Vec<Polynomial> = Vec::with_capacity(2);
 
     for &(position, ref token) in &tokens.tokens {
       match *token {
@@ -287,7 +287,7 @@ impl Evaluator {
   /// Each function (or an operator) must have a registered function
   /// handle which takes arguments (or operands) and evaluate them
   /// into a single value Polynomial.
-  //
+  ///
   /// If a function with the same name has been registered, previously
   /// registered function is returned, however the name of the function
   /// cannot collide with an already registered constant.
