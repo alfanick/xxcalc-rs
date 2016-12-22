@@ -258,7 +258,7 @@ pub mod functions {
   /// It will return a wrapped `PolynomialError::NonConstantError` when any of the
   /// arguments is not a constant polynomial (a polynomial of degree zero).
   pub fn log(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
-    Ok(Polynomial::constant(try!(args[0].as_f64()).log(try!(args[1].as_f64()))))
+    Ok(Polynomial::constant(args[0].as_f64()?.log(args[1].as_f64()?)))
   }
 
   /// Computes a decimal logarithm (requires a single constant argument).
@@ -277,7 +277,7 @@ pub mod functions {
   /// It will return a wrapped `PolynomialError::NonConstantError` when the argument
   /// is not a constant polynomial (a polynomial of degree zero).
   pub fn log10(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
-    Ok(Polynomial::constant(try!(args[0].as_f64()).log10()))
+    Ok(Polynomial::constant(args[0].as_f64()?.log10()))
   }
 
   /// Binds a polynomial with a value (requires two arguments).
@@ -299,7 +299,7 @@ pub mod functions {
   /// It will return a wrapped `PolynomialError::NonConstantError` when the second
   /// argument is not a constant polynomial (a polynomial of degree zero).
   pub fn bind(args: Vec<Polynomial>) -> Result<Polynomial, EvaluationError> {
-    Ok(args[0].bind(try!(args[1].as_f64())))
+    Ok(args[0].bind(args[1].as_f64()?))
   }
 
   /// Performs exponentiation of polynomial (requires two arguments).

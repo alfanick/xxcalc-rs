@@ -247,7 +247,7 @@ impl TokensReducer for Evaluator {
       match *token {
         Token::Number(x) => stack.push(Polynomial::constant(x)),
         Token::Operator(x) => {
-          let result = try!(self.call_function(&x.to_string(), position, &mut stack));
+          let result = self.call_function(&x.to_string(), position, &mut stack)?;
           stack.push(result);
         },
         Token::Identifier(idx) => {
@@ -258,7 +258,7 @@ impl TokensReducer for Evaluator {
             continue;
           }
 
-          let result = try!(self.call_function(&x, position, &mut stack));
+          let result = self.call_function(&x, position, &mut stack)?;
           stack.push(result);
         },
         _ => unreachable!()
@@ -556,7 +556,7 @@ mod tests {
     evaluator.register_function("*", Function::new(2, Box::new(multiplication)));
 
     evaluator.register_function("mod", Function::new(2, Box::new(|args|{
-      Ok(Polynomial::constant(try!(args[0].clone().as_f64()) % try!(args[1].clone().as_f64())))
+      Ok(Polynomial::constant(args[0].clone().as_f64()? % args[1].clone().as_f64()?))
     })));
 
     assert_eq!(evaluator.process(parser.process(tokenize_ref!("mod(17, 4)")).unwrap()), Ok(Polynomial::constant(1.0)));

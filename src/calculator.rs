@@ -49,8 +49,8 @@ pub trait Calculator<T, P, E>
     let evaluator = E::default();
 
     let tokens = tokenizer.process(line);
-    let parsed_tokens = try!(parser.process(tokens));
-    let evaluated = try!(evaluator.process(parsed_tokens));
+    let parsed_tokens = parser.process(tokens)?;
+    let evaluated = evaluator.process(parsed_tokens)?;
 
     Ok(evaluated)
   }
